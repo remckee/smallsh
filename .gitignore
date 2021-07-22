@@ -1,0 +1,13 @@
+# This is a simple .gitignore that will ignore everything
+# except this file, and c and h files
+
+#ignore everything
+*
+*/
+
+#unignore .c, .h, and .sh and this file, and the README
+!.gitignore
+!README.txt
+!*.c
+!*.h
+!*.sh
