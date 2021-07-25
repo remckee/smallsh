@@ -8,25 +8,48 @@ Last edited: 07/22/2021
 #ifndef SMALLSH_H
 #define SMALLSH_H
 
-//#include <dirent.h>
 #include <stdio.h>
-//#include <string.h>
 #include <stdlib.h>
-//#include <argp.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
+//#include <dirent.h>
+//#include <string.h>
+//#include <argp.h>
 //#include <fcntl.h>
 //#include <sys/stat.h>
 //#include <assert.h>
 //#include <math.h>
 //#include <time.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 //#include <utime.h>
 //#include <errno.h>
-#include <sys/types.h>
 //#include <elf.h>
+
+#define CMD_PROMPT          ':'
+#define PID_VAR             "$$"
+#define INPUT_REDIR         '<'
+#define OUTPUT_REDIR        '>'
+#define BACKGROUND          '&'
+#define MAX_CMD_CHARS       5//2048 Does it include newline?
+#define MAX_CMD_ARGS        512
+
+/* struct for storing parts of a command */
+struct command_line {
+    char *command;
+    int argsc;
+    char *input_file;
+    char *output_file;
+    bool background;
+    char *newargv[];
+};
+
 
 /* exit.c */
 /* cd.c */
+int mycd(int argc, char *argv[]);
+
+
 /* status.c */
 
 #endif // SMALLSH_H
