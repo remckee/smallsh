@@ -23,7 +23,7 @@ Last edited: 07/22/2021
 //#include <time.h>
 #include <stdbool.h>
 //#include <utime.h>
-//#include <errno.h>
+#include <errno.h>
 //#include <elf.h>
 
 #define CMD_PROMPT          ':'
@@ -31,8 +31,8 @@ Last edited: 07/22/2021
 #define INPUT_REDIR         '<'
 #define OUTPUT_REDIR        '>'
 #define BACKGROUND          '&'
-#define MAX_CMD_CHARS       5//2048 Does it include newline?
-#define MAX_CMD_ARGS        512
+#define MAX_CMD_CHARS       2048//2048 Does it include newline?
+#define MAX_CMD_ARGS        512//Does it include all args? Or just [arg1 arg2 ...]?
 
 /* struct for storing parts of a command */
 struct command_line {
