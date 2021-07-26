@@ -24,3 +24,8 @@ void free_safe(void *ptr) {
         free(ptr);
     }
 }
+
+char *print_string_safe(char *str) {
+    return (str) ? str : "NULL";
+}
+

@@ -18,7 +18,7 @@ Last edited: 07/26/2021
 //#include <argp.h>
 //#include <fcntl.h>
 //#include <sys/stat.h>
-//#include <assert.h>
+#include <assert.h>
 //#include <math.h>
 //#include <time.h>
 #include <stdbool.h>
@@ -49,7 +49,7 @@ struct cmd_line {
 /* functions.c */
 void *malloc_safe(void *ptr, size_t size);
 void free_safe(void *ptr);
-
+char *print_string_safe(char *str);
 
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
