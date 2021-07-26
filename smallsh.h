@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 2
-Last edited: 07/22/2021
+Last edited: 07/26/2021
 **********************/
 
 #ifndef SMALLSH_H
@@ -44,6 +44,11 @@ struct cmd_line {
     char *output_file;
     bool background;
 };
+
+
+/* functions.c */
+void *malloc_safe(void *ptr, size_t size);
+void free_safe(void *ptr);
 
 
 /* process_args.c */

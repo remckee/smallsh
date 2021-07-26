@@ -18,19 +18,11 @@ int main (int argc, char *argv[]) {
   //  size_t len = 0;
   //  ssize_t nread;
 
-    //newargv[0] = argv[1];
-    //char *cmd;
     printf("%c ", CMD_PROMPT);
     fflush(NULL);
-   // printf("%c ", CMD_PROMPT);
-   // fflush(NULL);
-   // char *line = NULL;
-    //size_t len = 0;
     ssize_t nread = 0;
     char *line = NULL;//[MAX_CHARS+2];
     size_t len = 0;
-    //cmd_parts->newargv = malloc(sizeof(char) * MAX_ARGS);
-
     char quit = ' ';
     //line = malloc(sizeof(char)*(MAX_CHARS+2));
 
@@ -38,7 +30,7 @@ int main (int argc, char *argv[]) {
     /*    fprintf(stderr, "Usage: %s <file>\n", argv[0]); */
     /*    exit(EXIT_FAILURE); */
     /* } */
-//EINVAL
+
     //while ((line = fgets(line, MAX_CHARS+1, stdin)) != NULL) {
     while (quit !='q' &&(nread = getline(&line, &len, stdin)) != -1) {
         struct cmd_line *cmd_parts;
@@ -65,18 +57,17 @@ int main (int argc, char *argv[]) {
 
             if (arg) {
                 count++;
-                printf("arg %s of length %d. Total arg count: %d\n", arg, diff, count);
-                fflush(NULL);
+                //printf("arg %s of length %d. Total arg count: %d\n", arg, diff, count);
+                //fflush(NULL);
                 // process arg
-                cmd_parts->cmd = strdup(arg);//malloc(sizeof(arg));
-                //strcpy(cmd_parts->cmd, arg);
-                free(arg);
+                cmd_parts->cmd = strdup(arg);
+                free_safe(arg);
                 if (cmd_parts->cmd[0] == COMMENT_CHAR) {
                     skip = true;
                 }
                 quit = cmd_parts->cmd[0];
-                printf("command: %s\n", cmd_parts->cmd);
-                fflush(NULL);
+                //printf("command: %s\n", cmd_parts->cmd);
+                //fflush(NULL);
 
 
                 // if line was not a comment
@@ -101,8 +92,8 @@ int main (int argc, char *argv[]) {
                                     fflush(NULL);
                                     skip = true;
                                 } else {
-                                    printf("arg %s of length %ld. Total arg count: %d\n", arg, arg_len, count);
-                                    fflush(NULL);
+                                    //printf("arg %s of length %ld. Total arg count: %d\n", arg, arg_len, count);
+                                    //fflush(NULL);
                                     // store arg
                                     if (input_next==1) {
                                         cmd_parts->input_file = strdup(arg);
@@ -142,7 +133,7 @@ int main (int argc, char *argv[]) {
                                         (cmd_parts->argsc)++;
                                     }
                                 }
-                                free(arg);
+                                free_safe(arg);
                             }
                         }
                         if (!skip) {
@@ -150,40 +141,26 @@ int main (int argc, char *argv[]) {
                             print_cmd(cmd_parts);
                         }
                     }
-
-                    //fwrite(line, nread, 1, stdout);
-                    //puts(line);
                 }
                 skip = false;
 
-                if (cmd_parts->cmd) {
-                    free(cmd_parts->cmd);
-                }
-
-                if (cmd_parts->input_file) {
-                    free(cmd_parts->input_file);
-                }
-
-                if (cmd_parts->output_file) {
-                    free(cmd_parts->output_file);
-                }
+                free_safe(cmd_parts->cmd);
+                free_safe(cmd_parts->input_file);
+                free_safe(cmd_parts->output_file);
 
                 for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
-                    if (cmd_parts->args[i]) {
-                        free(cmd_parts->args[i]);
-                    }
-
+                    free_safe(cmd_parts->args[i]);
                 }
             }
         }
 
-        free(cmd_parts);
+        free_safe(cmd_parts);
         printf("%c ", CMD_PROMPT);
         fflush(NULL);
     }
 
 
-    free(line);
+    free_safe(line);
     //execlp()
     //perror("execv");   /* execve() returns only on error */
     //exit(EXIT_FAILURE);
