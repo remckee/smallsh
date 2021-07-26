@@ -14,7 +14,7 @@ Last edited: 07/22/2021
 #include <sys/wait.h>
 #include <unistd.h>
 //#include <dirent.h>
-//#include <string.h>
+#include <string.h>
 //#include <argp.h>
 //#include <fcntl.h>
 //#include <sys/stat.h>
@@ -31,12 +31,13 @@ Last edited: 07/22/2021
 #define INPUT_REDIR         '<'
 #define OUTPUT_REDIR        '>'
 #define BACKGROUND          '&'
-#define MAX_CMD_CHARS       2048//2048 Does it include newline?
-#define MAX_CMD_ARGS        512//Does it include all args? Or just [arg1 arg2 ...]?
+#define COMMENT_CHAR        '#'
+#define MAX_CMD_CHARS       15//2048//2048 Does it include newline?
+#define MAX_CMD_ARGS        5//12//Does it include all args? Or just [arg1 arg2 ...]?
 
 /* struct for storing parts of a command */
-struct command_line {
-    char *command;
+struct cmd_line {
+    char *cmd;
     int argsc;
     char *input_file;
     char *output_file;
