@@ -27,34 +27,34 @@ int main (int argc, char *argv[]) {
    // char *line = NULL;
     //size_t len = 0;
     ssize_t nread = 0;
-    char *line = NULL;//[MAX_CMD_CHARS+2];
+    char *line = NULL;//[MAX_CHARS+2];
     size_t len = 0;
-    //cmd_parts->newargv = malloc(sizeof(char) * MAX_CMD_ARGS);
+    //cmd_parts->newargv = malloc(sizeof(char) * MAX_ARGS);
 
     char quit = ' ';
-    //line = malloc(sizeof(char)*(MAX_CMD_CHARS+2));
+    //line = malloc(sizeof(char)*(MAX_CHARS+2));
 
     /* if (argc != 2) { */
     /*    fprintf(stderr, "Usage: %s <file>\n", argv[0]); */
     /*    exit(EXIT_FAILURE); */
     /* } */
 //EINVAL
-    //while ((line = fgets(line, MAX_CMD_CHARS+1, stdin)) != NULL) {
+    //while ((line = fgets(line, MAX_CHARS+1, stdin)) != NULL) {
     while (quit !='q' &&(nread = getline(&line, &len, stdin)) != -1) {
         struct cmd_line *cmd_parts;
         cmd_parts = malloc(sizeof(struct cmd_line));
         cmd_parts->cmd = NULL;
+        cmd_parts->argsc = 0;
         cmd_parts->input_file = NULL;
         cmd_parts->output_file = NULL;
         cmd_parts->background = false;
-
+        //cmd_parts->args = malloc();
 
         if (nread > 1) {
             // parse arguments
             char *arg = NULL;
             int index = 0;
             int count = 0;
-            cmd_parts->argsc = 0;
             int diff;
             bool skip = false;         // determines whether to skip processing
                                        // because line is a comment
@@ -81,14 +81,14 @@ int main (int argc, char *argv[]) {
 
                 // if line was not a comment
                 if (!skip) {
-                    if (nread > MAX_CMD_CHARS+1) {
-                        printf("The command line was too long. A line can have a maximum of %d characters.\n", MAX_CMD_CHARS);
+                    if (nread > MAX_CHARS+1) {
+                        printf("The command line was too long. A line can have a maximum of %d characters.\n", MAX_CHARS);
                         fflush(NULL);
                         skip = true;
                     } else {
                         int input_next = -1;        // whether the next arg should be an input file
                         int output_next = -1;       // whether the next arg should be an output file
-                        while (arg && index < nread && count <= MAX_CMD_ARGS) {
+                        while (arg && index < nread && count <= MAX_ARGS) {
                             sscanf(&line[index], "%ms%n", &arg, &diff);
                             index += diff;
                             if (arg) {
@@ -96,8 +96,8 @@ int main (int argc, char *argv[]) {
 
                                 count++;
                                 long arg_len = strlen(arg);
-                                if (count > MAX_CMD_ARGS) {
-                                    printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", MAX_CMD_ARGS);
+                                if (count > MAX_ARGS) {
+                                    printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", MAX_ARGS);
                                     fflush(NULL);
                                     skip = true;
                                 } else {
@@ -137,8 +137,9 @@ int main (int argc, char *argv[]) {
                                         }
                                     } else {
                                         // process as part of [arg1 arg2 ...]
+                                        printf("adding arg: %s at %d\n", arg, cmd_parts->argsc);
+                                        cmd_parts->args[cmd_parts->argsc] = strdup(arg);
                                         (cmd_parts->argsc)++;
-
                                     }
                                 }
                                 free(arg);
@@ -146,7 +147,7 @@ int main (int argc, char *argv[]) {
                         }
                         if (!skip) {
                             //process args
-                            process(cmd_parts);
+                            print_cmd(cmd_parts);
                         }
                     }
 
@@ -155,6 +156,9 @@ int main (int argc, char *argv[]) {
                 }
                 skip = false;
 
+                if (cmd_parts->cmd) {
+                    free(cmd_parts->cmd);
+                }
 
                 if (cmd_parts->input_file) {
                     free(cmd_parts->input_file);
@@ -164,7 +168,12 @@ int main (int argc, char *argv[]) {
                     free(cmd_parts->output_file);
                 }
 
-                free(cmd_parts->cmd);
+                for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
+                    if (cmd_parts->args[i]) {
+                        free(cmd_parts->args[i]);
+                    }
+
+                }
             }
         }
 

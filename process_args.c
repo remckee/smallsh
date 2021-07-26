@@ -9,7 +9,7 @@ Last edited: 07/26/2021
 
 
 //int main(int argc, char *argv[]){
-int process(struct cmd_line *cmd_parts) {
+int print_cmd(struct cmd_line *cmd_parts) {
     int result = 0;
 /* struct cmd_line { */
 /*     char *cmd; */
@@ -51,6 +51,19 @@ int process(struct cmd_line *cmd_parts) {
         fflush(NULL);
     }
 
+    for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
+        if (cmd_parts->args[i]) {
+            printf("%d | %s\n", i, cmd_parts->args[i]);
+        } else {
+            printf("%d | NULL\n", i);
+        }
+
+    }
     //exit(EXIT_SUCCESS);
     return result;
 }
+
+/* struct cmd_line *get_cmd() { */
+/*     printf("%c ", CMD_PROMPT); */
+/*     fflush(NULL); */
+/* } */
