@@ -32,8 +32,8 @@ Last edited: 07/22/2021
 #define OUTPUT_REDIR        '>'
 #define BACKGROUND          '&'
 #define COMMENT_CHAR        '#'
-#define MAX_CMD_CHARS       15//2048//2048 Does it include newline?
-#define MAX_CMD_ARGS        5//12//Does it include all args? Or just [arg1 arg2 ...]?
+#define MAX_CMD_CHARS       2048 //Does it include newline?
+#define MAX_CMD_ARGS        512 //Does it include all args? Or just [arg1 arg2 ...]?
 
 /* struct for storing parts of a command */
 struct cmd_line {
@@ -42,8 +42,12 @@ struct cmd_line {
     char *input_file;
     char *output_file;
     bool background;
-    char *newargv[];
+    char **newargv;
 };
+
+
+/* process_args.c */
+int process(struct cmd_line *cmd_parts);
 
 
 /* exit.c */

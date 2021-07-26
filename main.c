@@ -30,6 +30,7 @@ int main (int argc, char *argv[]) {
     size_t len = 0;
     struct cmd_line *cmd_parts;
     cmd_parts = malloc(sizeof(struct cmd_line));
+    //cmd_parts->newargv = malloc(sizeof(char) * MAX_CMD_ARGS);
 
     char quit = ' ';
     //line = malloc(sizeof(char)*(MAX_CMD_CHARS+2));
@@ -46,9 +47,12 @@ int main (int argc, char *argv[]) {
             char *arg = NULL;
             int index = 0;
             int count = 0;
+            cmd_parts->argsc = 0;
             int diff;
             bool skip = false;         // determines whether to skip processing
                                        // because line is a comment
+                                       //
+            // try to parse first argument (command)
             sscanf(&line[index], "%ms%n", &arg, &diff);
             index += diff;
 
@@ -73,26 +77,71 @@ int main (int argc, char *argv[]) {
                     if (nread > MAX_CMD_CHARS+1) {
                         printf("The command line was too long. A line can have a maximum of %d characters.\n", MAX_CMD_CHARS);
                         fflush(NULL);
+                        skip = true;
                     } else {
+                        int input_next = -1;        // whether the next arg should be an input file
+                        int output_next = -1;       // whether the next arg should be an output file
                         while (arg && index < nread && count <= MAX_CMD_ARGS) {
+                            cmd_parts->background = false;
                             sscanf(&line[index], "%ms%n", &arg, &diff);
                             index += diff;
                             if (arg) {
                                 count++;
-
+                                long arg_len = strlen(arg);
                                 if (count > MAX_CMD_ARGS) {
                                     printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", MAX_CMD_ARGS);
                                     fflush(NULL);
+                                    skip = true;
                                 } else {
-                                    printf("arg %s of length %d. Total arg count: %d\n", arg, diff, count);
+                                    printf("arg %s of length %ld. Total arg count: %d\n", arg, arg_len, count);
                                     fflush(NULL);
-                                    // process arg
+                                    // store arg
+                                    if (input_next==1) {
+                                        cmd_parts->input_file = arg;
+
+                                        printf("input file: %s\n", cmd_parts->input_file);
+                                        fflush(NULL);
+                                        input_next = 0;
+                                    } else if (output_next==1) {
+                                        cmd_parts->output_file = arg;
+
+                                        printf("output file: %s\n", cmd_parts->output_file);
+                                        fflush(NULL);
+                                        output_next = 0;
+                                    } else if (arg_len==1) {
+
+                                        // input_next *= -1 will change the value:
+                                        // -1 -> 1
+                                        // 0 -> 0
+                                        // 1 -> -1
+                                        // such that, if initialized to -1 and set to 0 after
+                                        // using, it can only be used once.
+                                        // Works similarly for output_next.
+                                        if (arg[0]==INPUT_REDIR) {
+                                            input_next *= -1;
+                                        } else if (arg[0]==OUTPUT_REDIR) {
+                                            output_next *= -1;
+                                        } else if (arg[0]==BACKGROUND) {
+                                            // if there are any arguments after this,
+                                            // cmd_parts->background will be changed to false
+                                            // at beginning of next iteration of while loop
+                                            cmd_parts->background = true;
+                                        }
+                                    } else {
+                                        // process as part of [arg1 arg2 ...]
+                                        (cmd_parts->argsc)++;
+
+                                    }
                                 }
 
                                 free(arg);
 
                             }
                         }
+                        if (!skip) {
+                            //process args
+                        }
+
                     }
 
                     //fwrite(line, nread, 1, stdout);
