@@ -44,11 +44,8 @@ int main (int argc, char *argv[]) {
                                    //
 
         if ((nread > 1) && line[0]!= COMMENT_CHAR) {
-            if (nread > MAX_CHARS+1) {
-                printf("The command line was too long. A line can have a maximum of %d characters.\n", MAX_CHARS);
-                fflush(NULL);
-                skip = true;
-            } else {
+            skip = warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
+            if (!skip) {
                 memset(buf, '\0', sizeof(buf));
                 strcpy(buf, line);
                 // parse arguments
@@ -70,22 +67,16 @@ int main (int argc, char *argv[]) {
                         if (arg) {
                             cmd_parts->background = false;
                             count++;
-                            long arg_len = strlen(arg);
-                            if (count > MAX_ARGS) {
-                                printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", MAX_ARGS);
-                                fflush(NULL);
-                                skip = true;
-                            } else {
+
+                            skip = warn_args(count > MAX_ARGS, MAX_ARGS);
+                            if (!skip) {
+                                long arg_len = strlen(arg);
                                 // store arg
                                 if (input_next==1) {
                                     cmd_parts->input_file = arg;
-                                    printf("input file: %s\n", cmd_parts->input_file);
-                                    fflush(NULL);
                                     input_next = 0;
                                 } else if (output_next==1) {
                                     cmd_parts->output_file = arg;
-                                    printf("output file: %s\n", cmd_parts->output_file);
-                                    fflush(NULL);
                                     output_next = 0;
 
                                 // input_next *= -1 will change the value:
@@ -118,12 +109,9 @@ int main (int argc, char *argv[]) {
                 }
             }
         }
-        skip = false;
-        //memset(line, '\0', sizeof(line));
         free_safe(cmd_parts);
         printf("%c ", CMD_PROMPT);
         fflush(NULL);
-        //fflush(stdin);
     }
 
     free_safe(line);
