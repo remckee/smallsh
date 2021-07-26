@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/22/2021
+Last edited: 07/26/2021
 **********************/
 
 #include "smallsh.h"
@@ -20,16 +20,15 @@ int main (int argc, char *argv[]) {
 
     //newargv[0] = argv[1];
     //char *cmd;
-
     printf("%c ", CMD_PROMPT);
     fflush(NULL);
+   // printf("%c ", CMD_PROMPT);
+   // fflush(NULL);
    // char *line = NULL;
     //size_t len = 0;
     ssize_t nread = 0;
     char *line = NULL;//[MAX_CMD_CHARS+2];
     size_t len = 0;
-    struct cmd_line *cmd_parts;
-    cmd_parts = malloc(sizeof(struct cmd_line));
     //cmd_parts->newargv = malloc(sizeof(char) * MAX_CMD_ARGS);
 
     char quit = ' ';
@@ -42,6 +41,14 @@ int main (int argc, char *argv[]) {
 //EINVAL
     //while ((line = fgets(line, MAX_CMD_CHARS+1, stdin)) != NULL) {
     while (quit !='q' &&(nread = getline(&line, &len, stdin)) != -1) {
+        struct cmd_line *cmd_parts;
+        cmd_parts = malloc(sizeof(struct cmd_line));
+        cmd_parts->cmd = NULL;
+        cmd_parts->input_file = NULL;
+        cmd_parts->output_file = NULL;
+        cmd_parts->background = false;
+
+
         if (nread > 1) {
             // parse arguments
             char *arg = NULL;
@@ -61,9 +68,9 @@ int main (int argc, char *argv[]) {
                 printf("arg %s of length %d. Total arg count: %d\n", arg, diff, count);
                 fflush(NULL);
                 // process arg
-                cmd_parts->cmd = arg;//malloc(sizeof(arg));
+                cmd_parts->cmd = strdup(arg);//malloc(sizeof(arg));
                 //strcpy(cmd_parts->cmd, arg);
-                //free(arg);
+                free(arg);
                 if (cmd_parts->cmd[0] == COMMENT_CHAR) {
                     skip = true;
                 }
@@ -82,10 +89,11 @@ int main (int argc, char *argv[]) {
                         int input_next = -1;        // whether the next arg should be an input file
                         int output_next = -1;       // whether the next arg should be an output file
                         while (arg && index < nread && count <= MAX_CMD_ARGS) {
-                            cmd_parts->background = false;
                             sscanf(&line[index], "%ms%n", &arg, &diff);
                             index += diff;
                             if (arg) {
+                                cmd_parts->background = false;
+
                                 count++;
                                 long arg_len = strlen(arg);
                                 if (count > MAX_CMD_ARGS) {
@@ -97,13 +105,13 @@ int main (int argc, char *argv[]) {
                                     fflush(NULL);
                                     // store arg
                                     if (input_next==1) {
-                                        cmd_parts->input_file = arg;
+                                        cmd_parts->input_file = strdup(arg);
 
                                         printf("input file: %s\n", cmd_parts->input_file);
                                         fflush(NULL);
                                         input_next = 0;
                                     } else if (output_next==1) {
-                                        cmd_parts->output_file = arg;
+                                        cmd_parts->output_file = strdup(arg);
 
                                         printf("output file: %s\n", cmd_parts->output_file);
                                         fflush(NULL);
@@ -124,7 +132,7 @@ int main (int argc, char *argv[]) {
                                         } else if (arg[0]==BACKGROUND) {
                                             // if there are any arguments after this,
                                             // cmd_parts->background will be changed to false
-                                            // at beginning of next iteration of while loop
+                                            // near beginning of next iteration of while loop
                                             cmd_parts->background = true;
                                         }
                                     } else {
@@ -133,31 +141,39 @@ int main (int argc, char *argv[]) {
 
                                     }
                                 }
-
                                 free(arg);
-
                             }
                         }
                         if (!skip) {
                             //process args
+                            process(cmd_parts);
                         }
-
                     }
 
                     //fwrite(line, nread, 1, stdout);
                     //puts(line);
                 }
                 skip = false;
+
+
+                if (cmd_parts->input_file) {
+                    free(cmd_parts->input_file);
+                }
+
+                if (cmd_parts->output_file) {
+                    free(cmd_parts->output_file);
+                }
+
                 free(cmd_parts->cmd);
             }
         }
 
-
+        free(cmd_parts);
         printf("%c ", CMD_PROMPT);
         fflush(NULL);
     }
 
-    free(cmd_parts);
+
     free(line);
     //execlp()
     //perror("execv");   /* execve() returns only on error */
