@@ -34,27 +34,47 @@ int main (int argc, char *argv[]) {
     //while (quit !='q') {
     while (quit !='q') {
         //(fgets(line, MAX_CHARS+1, stdin));
-        struct cmd_line *cmd_parts;
-        cmd_parts = malloc(sizeof(struct cmd_line));
-        bool skip = get_cmd(cmd_parts, &quit);
+        //struct cmd_line *cmd_parts = malloc(sizeof(struct cmd_line));
+        // = malloc(sizeof(struct cmd_line));
+        /* cmd_parts.cmd = NULL; */
+        /* cmd_parts.argsc = 0; */
+        /* cmd_parts.input_file = NULL; */
+        /* cmd_parts.output_file = NULL; */
+        /* cmd_parts.background = false; */
+        bool skip;
+        struct cmd_line *cmd_parts = get_cmd(&quit, &skip);
        // struct cmd_line *cmd_parts = get_cmd(&quit);
 
         if (!skip) {
             assert(cmd_parts->cmd);
+            if (is_built_in(cmd_parts->cmd)) {
+                printf("built in\n");
+            } else {
+                printf("external\n");
+            }
+        }
+        free_safe(cmd_parts->cmd);
+        free_safe(cmd_parts->input_file);
+        free_safe(cmd_parts->output_file);
+
+        for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
+            free_safe(cmd_parts->args[i]);
         }
 
-        //if (cmd_parts->cmd) {
-        /*     printf("command from main: %s\n", print_string_safe(cmd_parts->cmd)); */
-        /*     fflush(NULL); */
-        /* } else { */
-        /*     printf("error\n"); */
-        /*     fflush(NULL); */
+        free_safe(cmd_parts);
+    }
+       // if (!skip) {
+
+            //char *c = cmd_parts->cmd;
+            //printf("command from main: %s\n", c);
+            //fflush(NULL);
      //   }
-        //if (cmd_parts) {
+
+       // if (cmd_parts) {
             //process args
-            //print_cmd(cmd_parts);
+       //     print_cmd(cmd_parts);
             //free_safe(cmd_parts);
-        //}
+       // }
         /* cmd_parts->cmd = NULL; */
         /* cmd_parts->argsc = 0; */
         /* cmd_parts->input_file = NULL; */
@@ -140,8 +160,7 @@ int main (int argc, char *argv[]) {
         /* free_safe(cmd_parts); */
         /* printf("%c ", CMD_PROMPT); */
         /* fflush(NULL); */
-        free_safe(cmd_parts);
-    }
+
 
     //free_safe(line);
     //execlp()

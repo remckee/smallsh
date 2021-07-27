@@ -69,7 +69,9 @@ char *expand_vars(char *str, pid_t pid, int *nrepls);
 
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
-bool get_cmd(struct cmd_line *cmd_parts, char *quit);
+struct cmd_line *get_cmd(char *quit, bool *skip);
+struct cmd_line *get_cmd_test(char *quit, bool *skip);
+bool is_built_in(char *cmd);
 
 /* exit.c */
 /* cd.c */
