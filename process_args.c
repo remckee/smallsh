@@ -79,11 +79,12 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
     cmd_parts->output_file = NULL;
     cmd_parts->background = false;
 
-    *skip = (nread <= 1) || line[0]== COMMENT_CHAR;
+    // Check whether this command should be skipped because the read was invalid
+    // or only contained a newline char, it was a comment, or it exceeded the char limit.
+    *skip = (nread <= 1) || line[0]== COMMENT_CHAR || warn_chars(nread > MAX_CHARS, MAX_CHARS);
 
-    // If the command line exceeds the character limit, display a warning message
-    // to the user, and skip processing the rest of the line.
-    *skip = (*skip) || warn_chars(nread > MAX_CHARS, MAX_CHARS);
+    // If the command line exceeds the character limit, warn_chars will display a
+    // warning message to the user and return true.
 
     if (!(*skip)) {
         memset(buf, '\0', sizeof(buf));
@@ -94,6 +95,8 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
         // try to parse first argument (command)
         arg = strtok_r(buf, " \n", &save_ptr);
 
+        // Skip rest of command if arg is NULL
+        // (possibly due to containing only whitespace).
         *skip = !arg;
 
         if (!(*skip)) {
@@ -144,8 +147,7 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
                         // If the command line args will exceed the argument limit
                         // after incrementing, display a warning message to the user,
                         // and skip processing the rest of the line.
-                        (*skip) = warn_args(cmd_parts->argsc+1 > MAX_ARGS, MAX_ARGS);
-
+                        (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS, MAX_ARGS);
                         if (!(*skip)) {
                             cmd_parts->args[cmd_parts->argsc] = strdup(arg);
                             (cmd_parts->argsc)++;
@@ -163,13 +165,6 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
         }
     }
 
-    if (*skip) {
-        cmd_parts->cmd = NULL;
-        cmd_parts->argsc = 0;
-        cmd_parts->input_file = NULL;
-        cmd_parts->output_file = NULL;
-        cmd_parts->background = false;
-    }
     free_safe(line);
     return cmd_parts;
 }

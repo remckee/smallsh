@@ -47,10 +47,8 @@ int main (int argc, char *argv[]) {
         free_safe(cmd_parts);
     }
 
-    //free_safe(line);
     //execlp()
     //perror("execv");   /* execve() returns only on error */
     //exit(EXIT_FAILURE);
-
     return 0;
 }
