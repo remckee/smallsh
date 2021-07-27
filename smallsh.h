@@ -69,6 +69,7 @@ int print_cmd(struct cmd_line *cmd_parts);
 struct cmd_line *get_cmd(char *quit, bool *skip);
 struct cmd_line *get_cmd_test(char *quit, bool *skip);
 bool is_built_in(char *cmd);
+void run_built_in(struct cmd_line *cmd_parts);
 
 /* exit.c */
 /* cd.c */

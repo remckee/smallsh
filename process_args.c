@@ -81,7 +81,7 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
 
     // Check whether this command should be skipped because the read was invalid
     // or only contained a newline char, it was a comment, or it exceeded the char limit.
-    *skip = (nread <= 1) || line[0]== COMMENT_CHAR || warn_chars(nread > MAX_CHARS, MAX_CHARS);
+    *skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS, MAX_CHARS);
 
     // If the command line exceeds the character limit, warn_chars will display a
     // warning message to the user and return true.
@@ -95,9 +95,11 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
         // try to parse first argument (command)
         arg = strtok_r(buf, " \n", &save_ptr);
 
-        // Skip rest of command if arg is NULL
-        // (possibly due to containing only whitespace).
-        *skip = !arg;
+        // Skip rest of command if arg is NULL (possibly due to containing only whitespace)
+        // or command is a comment line not caught previously.
+        // Note that a comment line with leading whitespace, if it exceeds the char limit,
+        // should be caught by warn_chars, not here, to avoid buffer overflow.
+        *skip = !arg || (arg[0]==COMMENT_CHAR);
 
         if (!(*skip)) {
             int exp_count = 0;
@@ -145,9 +147,10 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
 
                     } else {
                         // If the command line args will exceed the argument limit
-                        // after incrementing, display a warning message to the user,
-                        // and skip processing the rest of the line.
+                        // after incrementing, warn_args will display a warning message
+                        // to the user and return true.
                         (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS, MAX_ARGS);
+
                         if (!(*skip)) {
                             cmd_parts->args[cmd_parts->argsc] = strdup(arg);
                             (cmd_parts->argsc)++;
@@ -183,4 +186,17 @@ struct cmd_line *get_cmd_test(char *quit, bool *skip) {
 
 bool is_built_in(char *cmd) {
     return !strcmp(cmd, "cd") || !strcmp(cmd, "status") || !strcmp(cmd, "exit");
+}
+
+
+void run_built_in(struct cmd_line *cmd_parts) {
+    if (strcmp(cmd_parts->cmd, "cd")) {
+
+    } else if (strcmp(cmd_parts->cmd, "status")) {
+
+    } else if (strcmp(cmd_parts->cmd, "exit")) {
+
+    } else {
+        assert(!is_built_in(cmd_parts->cmd));
+    }
 }

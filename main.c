@@ -23,12 +23,13 @@ int main (int argc, char *argv[]) {
         // into cmd_parts struct and true otherwise
         struct cmd_line *cmd_parts = get_cmd(&quit, &skip);
 
-        // if valid command was successfully parsed,
-        // route command to built-in or external
+        // If a valid non-comment command was successfully parsed,
+        // route command to built-in or external.
         if (!skip) {
             assert(cmd_parts->cmd);
             if (is_built_in(cmd_parts->cmd)) {
                 printf("built in\n");
+                run_built_in(cmd_parts);
             } else {
                 printf("external\n");
             }
