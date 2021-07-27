@@ -2,9 +2,12 @@
 # Name: Rebecca Mckeever
 # Course: CS 344
 # Assignment 3
-# Last edited: 07/23/2021
+# Last edited: 07/26/2021
 #*********************
 
 #!/bin/bash
 
-gcc -std=c11 -Wall -Werror -g3 -O0 -o smallsh *.c -D_POSIX_C_SOURCE=200809L
+gcc -std=c11 -Wall -Werror -g3 -O0 -o smallsh cd.c exit.c functions.c main.c process_args.c status.c -D_POSIX_C_SOURCE=200809L -lm
+
+
+gcc -std=c11 -Wall -Werror -g3 -O0 -o test test.c functions.c process_args.c -D_POSIX_C_SOURCE=200809L -lm
