@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 2
-Last edited: 07/26/2021
+Last edited: 07/27/2021
 **********************/
 
 #ifndef SMALLSH_H
@@ -26,6 +26,7 @@ Last edited: 07/26/2021
 #include <stdbool.h>
 //#include <utime.h>
 #include <errno.h>
+#include <signal.h>
 //#include <elf.h>
 
 

@@ -2,14 +2,15 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/26/2021
+Last edited: 07/27/2021
 **********************/
 
 #include "smallsh.h"
 
 int main (int argc, char *argv[]) {
     //char *newargv[] = { NULL, "hello", "world", NULL };
-
+//    pid_t pid = getpid();
+//    printf("pid in main: %d\n", pid);
     /* if (argc != 2) { */
     /*     fprintf(stderr, "Usage: %s <file-to-exec>\n", argv[0]); */
     /*     exit(EXIT_FAILURE); */
@@ -36,11 +37,24 @@ int main (int argc, char *argv[]) {
         struct cmd_line *cmd_parts;
         cmd_parts = malloc(sizeof(struct cmd_line));
         bool skip = get_cmd(cmd_parts, &quit);
+       // struct cmd_line *cmd_parts = get_cmd(&quit);
 
         if (!skip) {
-            //process args
-            print_cmd(cmd_parts);
+            assert(cmd_parts->cmd);
         }
+
+        //if (cmd_parts->cmd) {
+        /*     printf("command from main: %s\n", print_string_safe(cmd_parts->cmd)); */
+        /*     fflush(NULL); */
+        /* } else { */
+        /*     printf("error\n"); */
+        /*     fflush(NULL); */
+     //   }
+        //if (cmd_parts) {
+            //process args
+            //print_cmd(cmd_parts);
+            //free_safe(cmd_parts);
+        //}
         /* cmd_parts->cmd = NULL; */
         /* cmd_parts->argsc = 0; */
         /* cmd_parts->input_file = NULL; */

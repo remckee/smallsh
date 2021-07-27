@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/26/2021
+Last edited: 07/27/2021
 **********************/
 
 #include "smallsh.h"
@@ -55,9 +55,11 @@ int print_cmd(struct cmd_line *cmd_parts) {
 }
 
 bool get_cmd(struct cmd_line *cmd_parts, char *quit) {
+    //printf("pid in get_cmd: %d\n", pid);
     printf("%c ", CMD_PROMPT);
     fflush(NULL);
 
+    //pid_t pid = getpid();
     char *line = NULL;                  // Stores entire user input, which will be copied
                                         // to buf if it does not exceed the char limit.
     char buf[MAX_CHARS+1];              // MAX_CHARS+1 allows room for \0 at the end
@@ -76,8 +78,6 @@ bool get_cmd(struct cmd_line *cmd_parts, char *quit) {
     cmd_parts->output_file = NULL;
     cmd_parts->background = false;
     bool skip = false;         // determines whether to skip processing
-                               // because line is a comment
-                               //
 
     if ((nread > 1) && line[0]!= COMMENT_CHAR) {
         // If the command line exceeds the character limit, display a warning message
@@ -97,7 +97,14 @@ bool get_cmd(struct cmd_line *cmd_parts, char *quit) {
 
             if (arg) {
                 //count++;
+                    //char *str = "cd$$e q$$x";
+               // int exp_count = 0;
+               // arg = expand_vars(arg, pid, &exp_count);
                 cmd_parts->cmd = arg;
+               // if (exp_count > 0) {
+                  //  assert(exp_count > 0);
+                //    free_safe(arg);
+               // }
                 *quit = cmd_parts->cmd[0];
 
                 int input_next = -1;        // whether the next arg should be an input file
@@ -145,8 +152,16 @@ bool get_cmd(struct cmd_line *cmd_parts, char *quit) {
                         }
                     }
                 }
+                    if (!skip) {
+                        //process args
+                        print_cmd(cmd_parts);
+                    }
+            } else {
+                skip = true;
             }
         }
+    } else {
+        skip = true;
     }
 
     free_safe(line);
