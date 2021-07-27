@@ -35,8 +35,8 @@ Last edited: 07/26/2021
 #define OUTPUT_REDIR        '>'
 #define BACKGROUND          '&'
 #define COMMENT_CHAR        '#'
-#define MAX_CHARS           2048 //Does it include newline?
-#define MAX_ARGS            512 //Does it include all args? Or just [arg1 arg2 ...]?
+#define MAX_CHARS           2048
+#define MAX_ARGS            512
                                 //
 // https://man7.org/linux/man-pages/man3/regexec.3.html#EXAMPLES
 // Calculates the number of elements in arr
@@ -68,7 +68,7 @@ char *expand_vars(char *str, pid_t pid, int *nrepls);
 
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
-struct cmd_line *get_cmd();
+bool get_cmd(struct cmd_line *cmd_parts, char *quit);
 
 /* exit.c */
 /* cd.c */
