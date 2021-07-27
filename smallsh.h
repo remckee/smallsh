@@ -69,11 +69,11 @@ int print_cmd(struct cmd_line *cmd_parts);
 struct cmd_line *get_cmd(char *quit, bool *skip);
 struct cmd_line *get_cmd_test(char *quit, bool *skip);
 bool is_built_in(char *cmd);
-void run_built_in(struct cmd_line *cmd_parts);
+int run_built_in(char *cmd, char *args[], int argsc);
 
 /* exit.c */
 /* cd.c */
-int mycd(int argc, char *argv[]);
+int mycd(char *cmd, char *args[], int argsc);
 
 
 /* status.c */

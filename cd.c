@@ -2,22 +2,22 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/23/2021
+Last edited: 07/27/2021
 **********************/
 
 #include "smallsh.h"
 
+// Changes current working directory to a named directory or HOME
+int mycd(char *cmd, char *args[], int argsc) {
+    int success;
 
-//int main(int argc, char *argv[]){
-int mycd(int argc, char *argv[]) {
-    int result;
+    if (argsc > 0) {
+        // change to named directory if an argument was provided
+        success = chdir(args[0]);
 
-    if (argc >= 2) {
-        result = chdir(argv[1]);
-    } else if (argc == 1) {
-        result = chdir(getenv("HOME"));
+    } else if (cmd) {
+        // change to HOME directory
+        success = chdir(getenv("HOME"));
     }
-
-    //exit(EXIT_SUCCESS);
-    return result;
+    return success;
 }

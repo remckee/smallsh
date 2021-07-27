@@ -189,14 +189,27 @@ bool is_built_in(char *cmd) {
 }
 
 
-void run_built_in(struct cmd_line *cmd_parts) {
-    if (strcmp(cmd_parts->cmd, "cd")) {
+//int run_built_in(struct cmd_line *cmd_parts) {
+int run_built_in(char *cmd, char *args[], int argsc) {
+    int result;
 
-    } else if (strcmp(cmd_parts->cmd, "status")) {
+    if (!strcmp(cmd, "cd")) {
+        printf("run cd\n");
+        result = mycd(cmd, args, argsc);
 
-    } else if (strcmp(cmd_parts->cmd, "exit")) {
+        char *cur_dir = NULL;
+        cur_dir = getcwd(cur_dir, MAX_CHARS);
+        printf("changed directory to %s ", cur_dir);
+        free_safe (cur_dir);
+
+    } else if (!strcmp(cmd, "status")) {
+        printf("run status\n");
+
+    } else if (!strcmp(cmd, "exit")) {
+        printf("run exit\n");
 
     } else {
-        assert(!is_built_in(cmd_parts->cmd));
+        assert(!is_built_in(cmd));
     }
+    return result;
 }
