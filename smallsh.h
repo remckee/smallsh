@@ -63,7 +63,8 @@ int ltoa_buf(long num, char *buf, int size, int base);
 int ltoa_dec_buf(long num, char *buf, int size);
 //long find_replace(char *replace);
 long find_replace(const char *const pattern, const char *const str, char *replace);
-long find_replace_str(char *pattern, char *str, char *replace);
+char *find_replace_str(char *pattern, char *str, char *repl, int *nrepls);
+char *expand_vars(char *str, pid_t pid, int *nrepls);
 
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);

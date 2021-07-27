@@ -14,7 +14,7 @@ void *malloc_safe(void *ptr, size_t size) {
     if(loc_ptr) {
         ptr = loc_ptr;
     } else {
-
+        assert(loc_ptr!=NULL);
     }
     return ptr;
 }
@@ -116,53 +116,69 @@ if (regcomp(&regex, pattern, REG_NEWLINE)) {
     return len_str;
 }
 
-long find_replace_str(char *pattern, char *str, char *replace) {
-    long len_pat = strlen(pattern);
-    const long len_str = strlen(str);
-    long len_repl = strlen(replace);
-    char *loc = (strstr(str, "$$"));
-    char *s = str;
-    char *end = (str+len_str);
+//
+char *find_replace_str(char *pattern, char *str, char *repl, int *nrepls) {
+    const long len_str = strlen(str);           // the original length of str before expansion
+    long len_pat = strlen(pattern);             // length of given pattern
+    long len_repl = strlen(repl);               // length of replacement string
+    char *next_pat = (strstr(str, pattern));    // pointer to start of next instance of pattern
+    *nrepls = 0;
 
-    // calculate length of string after max possible expansions
-    long max_len = (len_str/len_pat)*(len_repl) + (len_str%len_pat);
-    printf("%ld\n", max_len);
+    // if next_pat is not NULL, at least one instance of pattern was found
+    if (next_pat) {
+        long len_new_str = len_str;                 // length of str after expansions
 
-    char new_str[max_len+1];
-    long len_new_str = len_str;
-    long i = 0;
+        // calculate length of string after max possible expansions
+        long max_len = (len_str/len_pat)*(len_repl) + (len_str%len_pat);
+        //printf("%ld\n", max_len);
+        char *new_str = NULL;
+        new_str = malloc_safe(new_str, (max_len+1)*sizeof(char));
 
-    while (s < end) {
-        if (!loc) {
-            printf("%c", *s);
-            new_str[i] = *s;
-            s++;
-            i++;
-        } else {
-            while (s < loc) {
-                printf("%c", *s);
+        char *s = str;                          // pointer to current location within str
+        char *end = (str+len_str);              // pointer to end of original str
+        long i = 0;                             // index in new_str
+
+
+        while (s < end) {
+            if (!next_pat) {
+                //printf("%c", *s);
                 new_str[i] = *s;
                 s++;
                 i++;
+            } else {
+                (*nrepls)++;
+                while (s < next_pat) {
+                    //printf("%c", *s);
+                    new_str[i] = *s;
+                    s++;
+                    i++;
+                }
+                //printf("%s", repl);
+                for (int j = 0; j < len_repl; j++) {
+                    new_str[i] = repl[j];
+                    i++;
+                }
+                s = (next_pat+len_pat);
+                next_pat = strstr(s, pattern);
+                len_new_str = len_new_str - len_pat + len_repl;
             }
-            printf("%s", replace);
-
-
-            for (int j = 0; j < len_repl; j++) {
-                new_str[i] = replace[j];
-                i++;
-            }
-            s = (loc+len_pat);
-            loc = strstr(s, "$$");
-            len_new_str = len_new_str - len_pat + len_repl;
         }
+        new_str[i] = '\0';
+        new_str = realloc(new_str, (i+1) * sizeof(char));
+        assert(new_str != NULL);
+        //if (len_str < len_new_str) {
+        str = new_str;
+       // }
+
+        printf("\nnew str: %s\n", str);
     }
-    new_str[i] = '\0';
-    //if (len_str < len_new_str) {
-    str = new_str;
-   // }
+    return str;
+}
 
-    printf("\nnew str: %s\n", new_str);
 
-    return len_new_str;
+char *expand_vars(char *str, pid_t pid, int *nrepls) {
+    int size = (log10(pid) / log10(10)) + 2;
+    char buf[size];
+    ltoa_buf(pid, buf, sizeof(buf), 10);
+    return find_replace_str(PID_VAR, str, buf, nrepls);
 }
