@@ -62,14 +62,18 @@ struct cmd_line {
 void init_cmd_struct(struct cmd_line *cmd_parts);
 
 
-/* functions.c */
+/* safe.c */
 void *malloc_safe(void *ptr, size_t size);
 void free_safe(void *ptr);
 char *print_string_safe(char *str);
-bool warn_args(bool condition, int max_args);
-bool warn_chars(bool condition, int max_chars);
+
+
+/* ltoa.c */
 int ltoa_buf(long num, char *buf, int size, int base);
 int ltoa_dec_buf(long num, char *buf, int size);
+
+
+/* expand.c */
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls);
 char *expand_vars(char *str, pid_t pid, int *nrepls);
 
@@ -78,9 +82,13 @@ char *expand_vars(char *str, pid_t pid, int *nrepls);
 int print_cmd(struct cmd_line *cmd_parts);
 bool valid_line(char *line, ssize_t nread);
 struct cmd_line *get_cmd(bool *skip);
+
+
+/* run.c */
 bool is_built_in(char *cmd);
 int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
 void run_external(struct cmd_line *cmd_parts, int *status, char *status_type);
+
 
 /* exit.c */
 void myexit();
@@ -101,9 +109,12 @@ int redirect_input(char *file_name);
 int redirect_output(char *file_name);
 
 
-/* file_error.c */
+/* error_warn.c */
 void exit_if_error(bool condition, char *file_name, char *function);
 void warn_dne(bool condition, char *program, char *file_name);
+bool warn_args(bool condition, int max_args);
+bool warn_chars(bool condition, int max_chars);
+
 
 #endif // SMALLSH_H
 
