@@ -18,7 +18,7 @@ Last edited: 07/27/2021
 //#include <dirent.h>
 #include <string.h>
 //#include <argp.h>
-//#include <fcntl.h>
+#include <fcntl.h>
 //#include <sys/stat.h>
 #include <assert.h>
 #include <math.h>
@@ -43,6 +43,8 @@ Last edited: 07/27/2021
 #define TERM                't'
 #define SUCCESS              0
 #define FAILURE              1
+
+#define S_IRW               0666
 
 
 /* struct for storing parts of a command */
@@ -77,8 +79,8 @@ int print_cmd(struct cmd_line *cmd_parts);
 bool valid_line(char *line, ssize_t nread);
 struct cmd_line *get_cmd(bool *skip);
 bool is_built_in(char *cmd);
-int run_built_in(struct cmd_line *cmd_parts, int val, char type);
-void run_external(struct cmd_line *cmd_parts, int *val, char *type);
+int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
+void run_external(struct cmd_line *cmd_parts, int *status, char *status_type);
 
 /* exit.c */
 void myexit();
@@ -89,8 +91,12 @@ int mycd(char *args[], int argsc);
 
 
 /* status.c */
-int get_status(int wstatus, char *type);
-void report_status(int val, char type);
+int get_status(int wstatus, char *status_type);
+void report_status(int status, char status_type);
+
+/* redirection.c */
+int redirect_input(char *file_name);
+
 
 /* file_error.c */
 void exit_if_error(bool condition, char *file_name, char *function);

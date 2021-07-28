@@ -9,22 +9,22 @@ Last edited: 07/28/2021
 
 
 int get_status(int wstatus, char *type) {
-    int status_val;
+    int status;
 
     if(WIFEXITED(wstatus)){
         *type = EXIT;
-        status_val = WEXITSTATUS(wstatus);
+        status = WEXITSTATUS(wstatus);
 
     } else if(WIFSIGNALED(wstatus)) {
         *type = TERM;
-        status_val = WTERMSIG(wstatus);
+        status = WTERMSIG(wstatus);
 
     }
-    return status_val;
+    return status;
 }
 
 
-void report_status(int val, char type) {
+void report_status(int status, char type) {
     char *message;
     //size_t size = 0;
 
@@ -34,7 +34,7 @@ void report_status(int val, char type) {
         message = "exit value";
     }
 
-    printf("%s %d\n", message, val);
+    printf("%s %d\n", message, status);
 }
 
 

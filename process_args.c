@@ -12,33 +12,33 @@ Last edited: 07/27/2021
 int print_cmd(struct cmd_line *cmd_parts) {
     int result = 0;
     if (cmd_parts->cmd) {
-        printf("command: %s\n", print_string_safe(cmd_parts->cmd));
+        printf("command: %s ", print_string_safe(cmd_parts->cmd));
         fflush(stdout);
     } else {
         // error, since the command part is required
     }
 
     if (cmd_parts->input_file) {
-        printf("input file: %s\n", print_string_safe(cmd_parts->input_file));
+        printf("input file: %s ", print_string_safe(cmd_parts->input_file));
         fflush(stdout);
     } else {
-        printf("no input file\n");
+        printf("no input file ");
         fflush(stdout);
     }
 
     if (cmd_parts->output_file) {
-        printf("output file: %s\n", print_string_safe(cmd_parts->output_file));
+        printf("output file: %s ", print_string_safe(cmd_parts->output_file));
         fflush(stdout);
     } else {
-        printf("no output file\n");
+        printf("no output file ");
         fflush(stdout);
     }
 
     if (cmd_parts->background) {
-        printf("process in the background\n");
+        printf("background\n");
         fflush(stdout);
     } else {
-        printf("process in the foreground\n");
+        printf("foreground\n");
         fflush(stdout);
     }
 
@@ -189,7 +189,7 @@ bool is_built_in(char *cmd) {
 }
 
 
-int run_built_in(struct cmd_line *cmd_parts, int val, char type) {
+int run_built_in(struct cmd_line *cmd_parts, int status, char status_type) {
     int result = -1;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
@@ -207,7 +207,7 @@ int run_built_in(struct cmd_line *cmd_parts, int val, char type) {
     } else if (!strcmp(cmd_parts->cmd, "status")) {
         printf("run status\n");
         fflush(stdout);
-        report_status(val, type);
+        report_status(status, status_type);
 
     } else if (!strcmp(cmd_parts->cmd, "exit")) {
         printf("run exit\n");
@@ -220,26 +220,45 @@ int run_built_in(struct cmd_line *cmd_parts, int val, char type) {
 }
 
 
-void run_external(struct cmd_line *cmd_parts, int *val, char *type) {
+void run_external(struct cmd_line *cmd_parts, int *status, char *status_type) {
     int child_status;
     pid_t child_pid = fork();
 
     if(child_pid == -1){
         perror("fork() failed!");
+        *status_type = EXIT;
+        *status = FAILURE;
         exit(1);
 
     } else if(child_pid == 0){
         // child process
-        execvp(cmd_parts->cmd, cmd_parts->args);
-        perror(cmd_parts->cmd);
-        *type = EXIT;
-        *val = FAILURE;
+        // input redirection
+        int success = 0;
+
+        if (cmd_parts->input_file) {
+            success = redirect_input(cmd_parts->input_file);
+        }
+
+        //if
+
+        // execute command
+        if (success != -1) {
+            execvp(cmd_parts->cmd, cmd_parts->args);
+
+            // if execvp returns, display error message,
+            // update status, and terminate child process
+            perror(cmd_parts->cmd);
+        }
+
+        *status_type = EXIT;
+        *status = FAILURE;
+        exit(1);
 
     } else{
         // parent process
         child_pid = waitpid(child_pid, &child_status, 0);
-        *val = get_status(child_status, type);
+        *status = get_status(child_status, status_type);
         printf("parent reports status: ");
-        report_status(*val, *type);
+        report_status(*status, *status_type);
     }
 }
