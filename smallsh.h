@@ -94,8 +94,11 @@ int mycd(char *args[], int argsc);
 int get_status(int wstatus, char *status_type);
 void report_status(int status, char status_type);
 
+
 /* redirection.c */
+int redirect(char *file_name, char *msg, int flags, int new_fd);
 int redirect_input(char *file_name);
+int redirect_output(char *file_name);
 
 
 /* file_error.c */
