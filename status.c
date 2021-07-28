@@ -19,9 +19,9 @@ void report_status(int status, char type) {
     //size_t size = 0;
 
     if (type=='t') {
-        message = "terminated by signal ";
+        message = "terminated by signal";
     } else {
-        message = "exit value ";
+        message = "exit value";
     }
 
     printf("%s %d\n", message, status);

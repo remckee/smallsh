@@ -55,27 +55,28 @@ int print_cmd(struct cmd_line *cmd_parts) {
     return result;
 }
 
-/* bool valid_line(char *line, ssize_t nread) { */
-/*     bool skip = false; */
 
-/*     if (ferror(stdin)) { */
-/*         clearerr(stdin); */
-/*         skip = true; */
-/*     } */
+bool valid_line(char *line, ssize_t nread) {
+    bool skip = false;
 
-/*     // Check whether this command should be skipped because the read was invalid */
-/*     // or only contained a newline char, it was a comment, or it exceeded the char limit. */
-/*     skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS); */
+    // Clear any errors from stdin.
+    if (ferror(stdin)) {
+        clearerr(stdin);
+        skip = true;
+    }
 
-/*     // If the command line exceeds the character limit, warn_chars will display a */
-/*     // warning message to the user and return true. */
+    // Check whether this command should be skipped because the read was invalid
+    // or only contained a newline char, it was a comment, or it exceeded the char limit.
+    skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
 
-/* } */
+    // If the command line exceeds the character limit, warn_chars will display a
+    // warning message to the user and return true.
+    return skip;
+}
 
 
 
 struct cmd_line *get_cmd(char *quit, bool *skip) {
-    //printf("pid in get_cmd: %d\n", pid);
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
 
@@ -86,28 +87,13 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
     memset(buf, '\0', sizeof(buf));
     ssize_t nread = 0;
     size_t len = 0;
-    //char quit = ' ';
 
     nread = getline(&line, &len, stdin);
-
-    if (ferror(stdin)) {
-        clearerr(stdin);
-        free(line);
-        line = NULL;
-        len = 0;
-        *skip = true;
-    }
+    *skip = valid_line(line, nread);
 
     struct cmd_line *cmd_parts = NULL;
     cmd_parts = malloc(sizeof(struct cmd_line));
     init_cmd_struct(cmd_parts);
-
-    // Check whether this command should be skipped because the read was invalid
-    // or only contained a newline char, it was a comment, or it exceeded the char limit.
-    *skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
-
-    // If the command line exceeds the character limit, warn_chars will display a
-    // warning message to the user and return true.
 
     if (!(*skip)) {
         memset(buf, '\0', sizeof(buf));
