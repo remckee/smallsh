@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/27/2021
+Last edited: 07/28/2021
 **********************/
 
 #include "smallsh.h"
@@ -17,6 +17,7 @@ Last edited: 07/27/2021
 void exit_if_error(bool condition, char *file_name, char *function) {
     if (condition) {
         fprintf(stderr, "%s() failed on \"%s\"\n", function, file_name);
+        fflush(stdout);
         exit(1);
     }
 }
@@ -30,6 +31,25 @@ void exit_if_error(bool condition, char *file_name, char *function) {
 void warn_dne(bool condition, char *program, char *file_name) {
     if (condition) {
         fprintf(stderr, "%s: %s: No such file or directory\n", program, file_name);
+        fflush(stdout);
     }
+}
+
+
+bool warn_chars(bool condition, int max_chars) {
+    if (condition) {
+        printf("The command line was too long. A line can have a maximum of %d characters.\n", max_chars);
+        fflush(stdout);
+    }
+    return condition;
+}
+
+
+bool warn_args(bool condition, int max_args) {
+    if (condition) {
+        printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", max_args);
+        fflush(stdout);
+    }
+    return condition;
 }
 

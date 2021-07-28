@@ -19,6 +19,7 @@ void *malloc_safe(void *ptr, size_t size) {
     return ptr;
 }
 
+
 // free_safe will check whether ptr is NULL, but it will not check
 // whether ptr was actually allocated.
 void free_safe(void *ptr) {
@@ -27,25 +28,11 @@ void free_safe(void *ptr) {
     }
 }
 
+
 char *print_string_safe(char *str) {
     return (str) ? str : "NULL";
 }
 
-bool warn_chars(bool condition, int max_chars) {
-    if (condition) {
-        printf("The command line was too long. A line can have a maximum of %d characters.\n", max_chars);
-        fflush(stdout);
-    }
-    return condition;
-}
-
-bool warn_args(bool condition, int max_args) {
-    if (condition) {
-        printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", max_args);
-        fflush(stdout);
-    }
-    return condition;
-}
 
 // converts a long in the specified base to a char buffer
 int ltoa_buf(long num, char *buf, int size, int base) {
@@ -69,6 +56,7 @@ int ltoa_buf(long num, char *buf, int size, int base) {
     }
     return len;
 }
+
 
 // decimal long to ascii conversion
 int ltoa_dec_buf(long num, char *buf, int size) {
