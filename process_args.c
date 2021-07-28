@@ -106,6 +106,8 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
             int exp_count = 0;
             arg = expand_vars(arg, pid, &exp_count);
             cmd_parts->cmd = strdup(arg);
+            cmd_parts->args[cmd_parts->argsc] = cmd_parts->cmd;
+            (cmd_parts->argsc)++;
             if (exp_count > 0) {
                 free_safe(arg);
             }
@@ -162,10 +164,9 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
                     }
                 }
             }
-                if (!(*skip)) {
-                    //process args
-                    print_cmd(cmd_parts);
-                }
+            if (!(*skip)) {
+                print_cmd(cmd_parts);
+            }
         }
     }
 
@@ -197,7 +198,8 @@ int run_built_in(char *cmd, char *args[], int argsc) {
     if (!strcmp(cmd, "cd")) {
         printf("run cd\n");
         fflush(stdout);
-        result = mycd(cmd, args, argsc);
+        result = mycd(args, argsc);
+        warn_dne((result==-1) && (argsc > 1), cmd, args[1]);
 
         char *cur_dir = NULL;
         cur_dir = getcwd(cur_dir, MAX_CHARS);
@@ -208,6 +210,7 @@ int run_built_in(char *cmd, char *args[], int argsc) {
     } else if (!strcmp(cmd, "status")) {
         printf("run status\n");
         fflush(stdout);
+        // call status
 
     } else if (!strcmp(cmd, "exit")) {
         printf("run exit\n");

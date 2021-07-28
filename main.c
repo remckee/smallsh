@@ -46,7 +46,9 @@ int main (int argc, char *argv[]) {
         free_safe(cmd_parts->input_file);
         free_safe(cmd_parts->output_file);
 
-        for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
+        // Start at 1 because cmd_parts->args[0] is a pointer to cmd_parts->cmd,
+        // which was already freed.
+        for (int i = 1; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
             free_safe(cmd_parts->args[i]);
         }
 

@@ -75,10 +75,15 @@ int run_built_in(char *cmd, char *args[], int argsc);
 void myexit();
 
 /* cd.c */
-int mycd(char *cmd, char *args[], int argsc);
+int mycd(char *args[], int argsc);
 
 
 /* status.c */
+
+
+/* file_error.c */
+void exit_if_error(bool condition, char *file_name, char *function);
+void warn_dne(bool condition, char *program, char *file_name);
 
 #endif // SMALLSH_H
 

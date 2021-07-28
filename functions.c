@@ -19,6 +19,8 @@ void *malloc_safe(void *ptr, size_t size) {
     return ptr;
 }
 
+// free_safe will check whether ptr is NULL, but it will not check
+// whether ptr was actually allocated.
 void free_safe(void *ptr) {
     if (ptr) {
         free(ptr);
