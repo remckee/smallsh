@@ -12,52 +12,53 @@ Last edited: 07/27/2021
 int print_cmd(struct cmd_line *cmd_parts) {
     int result = 0;
     if (cmd_parts->cmd) {
-        printf("command from main: %s\n", print_string_safe(cmd_parts->cmd));
-        fflush(NULL);
+        printf("command: %s\n", print_string_safe(cmd_parts->cmd));
+        fflush(stdout);
     } else {
         // error, since the command part is required
     }
 
     if (cmd_parts->input_file) {
-        printf("input file from main: %s\n", print_string_safe(cmd_parts->input_file));
-        fflush(NULL);
+        printf("input file: %s\n", print_string_safe(cmd_parts->input_file));
+        fflush(stdout);
     } else {
         printf("no input file\n");
-        fflush(NULL);
+        fflush(stdout);
     }
 
     if (cmd_parts->output_file) {
-        printf("output file from main: %s\n", print_string_safe(cmd_parts->output_file));
-        fflush(NULL);
+        printf("output file: %s\n", print_string_safe(cmd_parts->output_file));
+        fflush(stdout);
     } else {
         printf("no output file\n");
-        fflush(NULL);
+        fflush(stdout);
     }
 
     if (cmd_parts->background) {
         printf("process in the background\n");
-        fflush(NULL);
+        fflush(stdout);
     } else {
         printf("process in the foreground\n");
-        fflush(NULL);
+        fflush(stdout);
     }
 
     for (int i = 0; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
         if (cmd_parts->args[i]) {
             printf("%d | %s\n", i, print_string_safe(cmd_parts->args[i]));
+            fflush(stdout);
         } else {
             printf("%d | NULL\n", i);
+            fflush(stdout);
         }
 
     }
-    //exit(EXIT_SUCCESS);
     return result;
 }
 
 struct cmd_line *get_cmd(char *quit, bool *skip) {
     //printf("pid in get_cmd: %d\n", pid);
     printf("%c ", CMD_PROMPT);
-    fflush(NULL);
+    fflush(stdout);
 
     pid_t pid = getpid();
     char *line = NULL;                  // Stores entire user input, which will be copied
@@ -161,10 +162,10 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
                     }
                 }
             }
-                /* if (!(*skip)) { */
-                /*     //process args */
-                /*     print_cmd(cmd_parts); */
-                /* } */
+                if (!(*skip)) {
+                    //process args
+                    print_cmd(cmd_parts);
+                }
         }
     }
 
@@ -195,19 +196,23 @@ int run_built_in(char *cmd, char *args[], int argsc) {
 
     if (!strcmp(cmd, "cd")) {
         printf("run cd\n");
+        fflush(stdout);
         result = mycd(cmd, args, argsc);
 
         char *cur_dir = NULL;
         cur_dir = getcwd(cur_dir, MAX_CHARS);
         printf("changed directory to %s ", cur_dir);
+        fflush(stdout);
         free_safe (cur_dir);
 
     } else if (!strcmp(cmd, "status")) {
         printf("run status\n");
+        fflush(stdout);
 
     } else if (!strcmp(cmd, "exit")) {
         printf("run exit\n");
-
+        fflush(stdout);
+        myexit();
     } else {
         assert(!is_built_in(cmd));
     }

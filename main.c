@@ -29,12 +29,15 @@ int main (int argc, char *argv[]) {
             assert(cmd_parts->cmd);
             if (is_built_in(cmd_parts->cmd)) {
                 printf("built in\n");
+                fflush(stdout);
                 int result = run_built_in(cmd_parts->cmd, cmd_parts->args, cmd_parts->argsc);
                 if (result==0) {
                     printf("success\n");
+                    fflush(stdout);
                 }
             } else {
                 printf("external\n");
+                fflush(stdout);
             }
         }
 

@@ -7,4 +7,7 @@ Last edited: 07/22/2021
 
 #include "smallsh.h"
 
-
+void myexit() {
+    // kill any other processes or jobs smallsh has started
+    exit(0);
+}

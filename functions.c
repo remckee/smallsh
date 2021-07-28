@@ -32,7 +32,7 @@ char *print_string_safe(char *str) {
 bool warn_chars(bool condition, int max_chars) {
     if (condition) {
         printf("The command line was too long. A line can have a maximum of %d characters.\n", max_chars);
-        fflush(NULL);
+        fflush(stdout);
     }
     return condition;
 }
@@ -40,7 +40,7 @@ bool warn_chars(bool condition, int max_chars) {
 bool warn_args(bool condition, int max_args) {
     if (condition) {
         printf("Too many command line arguments. A line can have a maximum of %d arguments.\n", max_args);
-        fflush(NULL);
+        fflush(stdout);
     }
     return condition;
 }

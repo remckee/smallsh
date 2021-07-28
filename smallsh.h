@@ -72,6 +72,8 @@ bool is_built_in(char *cmd);
 int run_built_in(char *cmd, char *args[], int argsc);
 
 /* exit.c */
+void myexit();
+
 /* cd.c */
 int mycd(char *cmd, char *args[], int argsc);
 
