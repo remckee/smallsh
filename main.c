@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/27/2021
+Last edited: 07/28/2021
 **********************/
 
 #include "smallsh.h"
@@ -13,15 +13,16 @@ int main (int argc, char *argv[]) {
     /*     exit(EXIT_FAILURE); */
     /* } */
 
-    char quit = ' ';
+    int status_val = SUCCESS;
+    char status_type = EXIT;
 
-    while (quit !='q') {
+    while (1) {
         bool skip;
 
         // Get command line from user.
         // get_cmd sets skip to false if command was successfully parsed
         // into cmd_parts struct and true otherwise
-        struct cmd_line *cmd_parts = get_cmd(&quit, &skip);
+        struct cmd_line *cmd_parts = get_cmd(&skip);
 
         // If a valid non-comment command was successfully parsed,
         // route command to built-in or external.
@@ -30,7 +31,7 @@ int main (int argc, char *argv[]) {
             if (is_built_in(cmd_parts->cmd)) {
                 printf("built in\n");
                 fflush(stdout);
-                int result = run_built_in(cmd_parts);
+                int result = run_built_in(cmd_parts, status_val, status_type);
                 if (result==0) {
                     printf("success\n");
                     fflush(stdout);
@@ -38,6 +39,7 @@ int main (int argc, char *argv[]) {
             } else {
                 printf("external\n");
                 fflush(stdout);
+                run_external(cmd_parts, &status_val, &status_type);
             }
         }
 
@@ -55,9 +57,5 @@ int main (int argc, char *argv[]) {
         // free memory allocated in get_cmd
         free_safe(cmd_parts);
     }
-
-    //execlp()
-    //perror("execv");   /* execve() returns only on error */
-    //exit(EXIT_FAILURE);
     return 0;
 }

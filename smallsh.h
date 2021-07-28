@@ -39,6 +39,11 @@ Last edited: 07/27/2021
 #define MAX_CHARS           2048
 #define MAX_ARGS            512
 
+#define EXIT                'e'
+#define TERM                't'
+#define SUCCESS              0
+#define FAILURE              1
+
 
 /* struct for storing parts of a command */
 struct cmd_line {
@@ -70,11 +75,10 @@ char *expand_vars(char *str, pid_t pid, int *nrepls);
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
 bool valid_line(char *line, ssize_t nread);
-struct cmd_line *get_cmd(char *quit, bool *skip);
-struct cmd_line *get_cmd_test(char *quit, bool *skip);
+struct cmd_line *get_cmd(bool *skip);
 bool is_built_in(char *cmd);
-int run_built_in(struct cmd_line *cmd_parts);
-
+int run_built_in(struct cmd_line *cmd_parts, int val, char type);
+void run_external(struct cmd_line *cmd_parts, int *val, char *type);
 
 /* exit.c */
 void myexit();
@@ -85,9 +89,8 @@ int mycd(char *args[], int argsc);
 
 
 /* status.c */
-int mystatus(int status);
-void report_status(int status, char type);
-
+int get_status(int wstatus, char *type);
+void report_status(int val, char type);
 
 /* file_error.c */
 void exit_if_error(bool condition, char *file_name, char *function);

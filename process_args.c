@@ -76,7 +76,7 @@ bool valid_line(char *line, ssize_t nread) {
 
 
 
-struct cmd_line *get_cmd(char *quit, bool *skip) {
+struct cmd_line *get_cmd(bool *skip) {
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
 
@@ -119,7 +119,6 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
             if (exp_count > 0) {
                 free_safe(arg);
             }
-            *quit = cmd_parts->cmd[0];
 
             int input_next = -1;        // whether the next arg should be an input file
             int output_next = -1;       // whether the next arg should be an output file
@@ -184,25 +183,13 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
     return cmd_parts;
 }
 
-struct cmd_line *get_cmd_test(char *quit, bool *skip) {
-    struct cmd_line *cmd_parts = malloc(sizeof(struct cmd_line));
-    cmd_parts->cmd = "cd";
-    cmd_parts->argsc = 0;
-    cmd_parts->input_file = "in";
-    cmd_parts->output_file = "out";
-    cmd_parts->background = false;
-    *skip = false;
-
-    return cmd_parts;
-}
 
 bool is_built_in(char *cmd) {
     return !strcmp(cmd, "cd") || !strcmp(cmd, "status") || !strcmp(cmd, "exit");
 }
 
 
-//int run_built_in(struct cmd_line *cmd_parts) {
-int run_built_in(struct cmd_line *cmd_parts) {
+int run_built_in(struct cmd_line *cmd_parts, int val, char type) {
     int result = -1;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
@@ -220,7 +207,7 @@ int run_built_in(struct cmd_line *cmd_parts) {
     } else if (!strcmp(cmd_parts->cmd, "status")) {
         printf("run status\n");
         fflush(stdout);
-        report_status(mystatus(0), 'e');
+        report_status(val, type);
 
     } else if (!strcmp(cmd_parts->cmd, "exit")) {
         printf("run exit\n");
@@ -230,4 +217,29 @@ int run_built_in(struct cmd_line *cmd_parts) {
         assert(!is_built_in(cmd_parts->cmd));
     }
     return result;
+}
+
+
+void run_external(struct cmd_line *cmd_parts, int *val, char *type) {
+    int child_status;
+    pid_t child_pid = fork();
+
+    if(child_pid == -1){
+        perror("fork() failed!");
+        exit(1);
+
+    } else if(child_pid == 0){
+        // child process
+        execvp(cmd_parts->cmd, cmd_parts->args);
+        perror(cmd_parts->cmd);
+        *type = EXIT;
+        *val = FAILURE;
+
+    } else{
+        // parent process
+        child_pid = waitpid(child_pid, &child_status, 0);
+        *val = get_status(child_status, type);
+        printf("parent reports status: ");
+        report_status(*val, *type);
+    }
 }
