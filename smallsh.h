@@ -50,8 +50,10 @@ struct cmd_line {
     bool background;
 };
 
+
 /* cmd_line.c */
 void init_cmd_struct(struct cmd_line *cmd_parts);
+
 
 /* functions.c */
 void *malloc_safe(void *ptr, size_t size);
@@ -64,21 +66,26 @@ int ltoa_dec_buf(long num, char *buf, int size);
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls);
 char *expand_vars(char *str, pid_t pid, int *nrepls);
 
+
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
 struct cmd_line *get_cmd(char *quit, bool *skip);
 struct cmd_line *get_cmd_test(char *quit, bool *skip);
 bool is_built_in(char *cmd);
-int run_built_in(char *cmd, char *args[], int argsc);
+int run_built_in(struct cmd_line *cmd_parts);
+
 
 /* exit.c */
 void myexit();
+
 
 /* cd.c */
 int mycd(char *args[], int argsc);
 
 
 /* status.c */
+int mystatus(int status);
+void report_status(int status, char type);
 
 
 /* file_error.c */

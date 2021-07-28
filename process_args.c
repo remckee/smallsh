@@ -55,15 +55,34 @@ int print_cmd(struct cmd_line *cmd_parts) {
     return result;
 }
 
+/* bool valid_line(char *line, ssize_t nread) { */
+/*     bool skip = false; */
+
+/*     if (ferror(stdin)) { */
+/*         clearerr(stdin); */
+/*         skip = true; */
+/*     } */
+
+/*     // Check whether this command should be skipped because the read was invalid */
+/*     // or only contained a newline char, it was a comment, or it exceeded the char limit. */
+/*     skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS); */
+
+/*     // If the command line exceeds the character limit, warn_chars will display a */
+/*     // warning message to the user and return true. */
+
+/* } */
+
+
+
 struct cmd_line *get_cmd(char *quit, bool *skip) {
     //printf("pid in get_cmd: %d\n", pid);
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
 
     pid_t pid = getpid();
-    char *line = NULL;                  // Stores entire user input, which will be copied
-                                        // to buf if it does not exceed the char limit.
-    char buf[MAX_CHARS+1];              // MAX_CHARS+1 allows room for \0 at the end
+    char *line = NULL;          // Stores entire user input, which will be copied
+                                // to buf if it does not exceed the char limit.
+    char buf[MAX_CHARS+2];      // MAX_CHARS+2 allows room for \n and \0 at the end
     memset(buf, '\0', sizeof(buf));
     ssize_t nread = 0;
     size_t len = 0;
@@ -71,18 +90,21 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
 
     nread = getline(&line, &len, stdin);
 
-    //struct cmd_line *cmd_parts;
+    if (ferror(stdin)) {
+        clearerr(stdin);
+        free(line);
+        line = NULL;
+        len = 0;
+        *skip = true;
+    }
+
     struct cmd_line *cmd_parts = NULL;
     cmd_parts = malloc(sizeof(struct cmd_line));
-    cmd_parts->cmd = NULL;
-    cmd_parts->argsc = 0;
-    cmd_parts->input_file = NULL;
-    cmd_parts->output_file = NULL;
-    cmd_parts->background = false;
+    init_cmd_struct(cmd_parts);
 
     // Check whether this command should be skipped because the read was invalid
     // or only contained a newline char, it was a comment, or it exceeded the char limit.
-    *skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS, MAX_CHARS);
+    *skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
 
     // If the command line exceeds the character limit, warn_chars will display a
     // warning message to the user and return true.
@@ -171,6 +193,8 @@ struct cmd_line *get_cmd(char *quit, bool *skip) {
     }
 
     free_safe(line);
+    line = NULL;
+    len = 0;
     return cmd_parts;
 }
 
@@ -192,14 +216,14 @@ bool is_built_in(char *cmd) {
 
 
 //int run_built_in(struct cmd_line *cmd_parts) {
-int run_built_in(char *cmd, char *args[], int argsc) {
-    int result;
+int run_built_in(struct cmd_line *cmd_parts) {
+    int result = -1;
 
-    if (!strcmp(cmd, "cd")) {
+    if (!strcmp(cmd_parts->cmd, "cd")) {
         printf("run cd\n");
         fflush(stdout);
-        result = mycd(args, argsc);
-        warn_dne((result==-1) && (argsc > 1), cmd, args[1]);
+        result = mycd(cmd_parts->args, cmd_parts->argsc);
+        warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd, cmd_parts->args[1]);
 
         char *cur_dir = NULL;
         cur_dir = getcwd(cur_dir, MAX_CHARS);
@@ -207,17 +231,17 @@ int run_built_in(char *cmd, char *args[], int argsc) {
         fflush(stdout);
         free_safe (cur_dir);
 
-    } else if (!strcmp(cmd, "status")) {
+    } else if (!strcmp(cmd_parts->cmd, "status")) {
         printf("run status\n");
         fflush(stdout);
-        // call status
+        report_status(mystatus(0), 'e');
 
-    } else if (!strcmp(cmd, "exit")) {
+    } else if (!strcmp(cmd_parts->cmd, "exit")) {
         printf("run exit\n");
         fflush(stdout);
         myexit();
     } else {
-        assert(!is_built_in(cmd));
+        assert(!is_built_in(cmd_parts->cmd));
     }
     return result;
 }

@@ -30,7 +30,7 @@ int main (int argc, char *argv[]) {
             if (is_built_in(cmd_parts->cmd)) {
                 printf("built in\n");
                 fflush(stdout);
-                int result = run_built_in(cmd_parts->cmd, cmd_parts->args, cmd_parts->argsc);
+                int result = run_built_in(cmd_parts);
                 if (result==0) {
                     printf("success\n");
                     fflush(stdout);
