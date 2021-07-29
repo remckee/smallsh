@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 07/29/2021
 **********************/
 
 #include "smallsh.h"
@@ -31,5 +31,21 @@ void free_safe(void *ptr) {
 
 char *print_string_safe(char *str) {
     return (str) ? str : "NULL";
+}
+
+void free_cmd(struct cmd_line *cmd_parts) {
+    // free memory that may have been allocated to expand $$ variables
+    free_safe(cmd_parts->cmd);
+    free_safe(cmd_parts->input_file);
+    free_safe(cmd_parts->output_file);
+
+    // Start at 1 because cmd_parts->args[0] is a pointer to cmd_parts->cmd,
+    // which was already freed.
+    for (int i = 1; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
+        free_safe(cmd_parts->args[i]);
+    }
+
+    // free memory allocated in get_cmd
+    free_safe(cmd_parts);
 }
 

@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 07/29/2021
 **********************/
 
 #ifndef SMALLSH_H
@@ -67,6 +67,7 @@ void init_cmd_struct(struct cmd_line *cmd_parts);
 void *malloc_safe(void *ptr, size_t size);
 void free_safe(void *ptr);
 char *print_string_safe(char *str);
+void free_cmd(struct cmd_line *cmd_parts);
 
 
 /* ltoa.c */
@@ -101,11 +102,12 @@ pid_t run_external_bg_parent(pid_t *child_pid, int *child_status);
 
 
 /* sig_handlers.c */
-
+void init_sig_handlers();
+void handle_SIGINT(int signum);
 
 
 /* exit.c */
-void myexit();
+void myexit(struct cmd_line *cmd_parts);
 
 
 /* cd.c */

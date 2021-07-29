@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 07/29/2021
 **********************/
 
 #include "smallsh.h"
@@ -36,7 +36,7 @@ int run_built_in(struct cmd_line *cmd_parts, int status, char status_type) {
     } else if (!strcmp(cmd_parts->cmd, "exit")) {
         printf("run exit\n");
         fflush(stdout);
-        myexit();
+        myexit(cmd_parts);
     } else {
         assert(!is_built_in(cmd_parts->cmd));
     }

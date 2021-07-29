@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 07/29/2021
 **********************/
 
 #include "smallsh.h"
@@ -16,6 +16,8 @@ int main (int argc, char *argv[]) {
     int status_val = SUCCESS;
     char status_type = EXIT;
     bool fg_only = false;
+
+    init_sig_handlers();
 
     while (1) {
         bool skip;
@@ -41,6 +43,10 @@ int main (int argc, char *argv[]) {
                 printf("external\n");
                 fflush(stdout);
 
+                if (fg_only) {
+                    //
+                }
+
                 if (fg_only || !(cmd_parts->background)) {
                     printf("running in foreground\n");
                     fflush(stdout);
@@ -54,20 +60,9 @@ int main (int argc, char *argv[]) {
                 }
             }
         }
-
-        // free memory that may have been allocated to expand $$ variables
-        free_safe(cmd_parts->cmd);
-        free_safe(cmd_parts->input_file);
-        free_safe(cmd_parts->output_file);
-
-        // Start at 1 because cmd_parts->args[0] is a pointer to cmd_parts->cmd,
-        // which was already freed.
-        for (int i = 1; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
-            free_safe(cmd_parts->args[i]);
-        }
-
-        // free memory allocated in get_cmd
-        free_safe(cmd_parts);
+        // free memory that may have been allocated when parsing command
+        free_cmd(cmd_parts);
     }
+
     return 0;
 }
