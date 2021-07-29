@@ -89,16 +89,17 @@ struct cmd_line *get_cmd(bool *skip);
 /* run.c */
 bool is_built_in(char *cmd);
 int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
-void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
-                  char *input_file, char *output_file,
-                  pid_t (*parent) (pid_t *child_pid, int *child_status));
+// void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
+//                   char *input_file, char *output_file,
+//                   pid_t (*parent) (pid_t*, int*, char*));
 
+int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
 void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type);
-void run_external_bg(struct cmd_line *cmd_parts, int *status, char *status_type);
-void run_external_fg_child();
-void run_external_bg_child();
-pid_t run_external_fg_parent(pid_t *child_pid, int *child_status);
-pid_t run_external_bg_parent(pid_t *child_pid, int *child_status);
+void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file);
+//void run_external_fg_child();
+//void run_external_bg_child();
+//pid_t run_external_fg_parent(pid_t *child_pid, int *child_status, char *status_type);
+//pid_t run_external_bg_parent(pid_t *child_pid, int *child_status, char *status_type);
 
 
 /* sig_handlers.c */
@@ -107,7 +108,7 @@ void handle_SIGINT(int signum);
 
 
 /* exit.c */
-void myexit(struct cmd_line *cmd_parts);
+void myexit(struct cmd_line *cmd_parts, int status);
 
 
 /* cd.c */
@@ -126,7 +127,9 @@ int redirect_output(char *file_name);
 
 
 /* error_warn.c */
-void exit_if_error(bool condition, char *file_name, char *function);
+void fg_exit_if_error(struct cmd_line *cmd_parts, bool condition, char *msg,
+                      int *status, char *status_type);
+void bg_exit_if_error(struct cmd_line *cmd_parts, bool condition);
 void warn_dne(bool condition, char *program, char *file_name);
 bool warn_args(bool condition, int max_args);
 bool warn_chars(bool condition, int max_chars);

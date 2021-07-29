@@ -55,7 +55,7 @@ int main (int argc, char *argv[]) {
                 } else {
                     printf("running in background\n");
                     fflush(stdout);
-                    run_external_bg(cmd_parts, &status_val, &status_type);
+                    run_external_bg(cmd_parts, BG_DEFAULT, BG_DEFAULT);
 
                 }
             }
