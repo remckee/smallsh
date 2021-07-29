@@ -2,7 +2,7 @@
 # Name: Rebecca Mckeever
 # Course: CS 344
 # Assignment 3
-# Last edited: 07/26/2021
+# Last edited: 07/28/2021
 #*********************
 
 #!/bin/bash

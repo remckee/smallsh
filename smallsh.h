@@ -1,8 +1,8 @@
 /*********************
 Name: Rebecca Mckeever
 Course: CS 344
-Assignment 2
-Last edited: 07/27/2021
+Assignment 3
+Last edited: 07/28/2021
 **********************/
 
 #ifndef SMALLSH_H
@@ -46,6 +46,7 @@ Last edited: 07/27/2021
 
 #define S_IRW               0666
 
+#define BG_DEFAULT          "/dev/null"
 
 /* struct for storing parts of a command */
 struct cmd_line {
@@ -87,7 +88,20 @@ struct cmd_line *get_cmd(bool *skip);
 /* run.c */
 bool is_built_in(char *cmd);
 int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
-void run_external(struct cmd_line *cmd_parts, int *status, char *status_type);
+void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
+                  char *input_file, char *output_file,
+                  pid_t (*parent) (pid_t *child_pid, int *child_status));
+
+void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type);
+void run_external_bg(struct cmd_line *cmd_parts, int *status, char *status_type);
+void run_external_fg_child();
+void run_external_bg_child();
+pid_t run_external_fg_parent(pid_t *child_pid, int *child_status);
+pid_t run_external_bg_parent(pid_t *child_pid, int *child_status);
+
+
+/* sig_handlers.c */
+
 
 
 /* exit.c */

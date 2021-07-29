@@ -43,13 +43,19 @@ int run_built_in(struct cmd_line *cmd_parts, int status, char status_type) {
     return result;
 }
 
+// run external command. File pointer *parent implements behavior that differs
+// between foreground and background modes.
+void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
+                  char *input_file, char *output_file,
+                  pid_t (*parent) (pid_t *child_pid, int *child_status)) {
 
-void run_external(struct cmd_line *cmd_parts, int *status, char *status_type) {
     int child_status;
     pid_t child_pid = fork();
 
     if(child_pid == -1){
+        // fork error
         perror("fork() failed!");
+        fflush(stdout);
         *status_type = EXIT;
         *status = FAILURE;
         exit(*status);
@@ -57,15 +63,17 @@ void run_external(struct cmd_line *cmd_parts, int *status, char *status_type) {
     } else if(child_pid == 0){
         // child process
         int success = 0;
+        char *input_red = (cmd_parts->input_file) ? (cmd_parts->input_file) : input_file;
+        char *output_red = (cmd_parts->output_file) ? (cmd_parts->output_file) : output_file;
 
         // input redirection
-        if (cmd_parts->input_file) {
-            success = redirect_input(cmd_parts->input_file);
+        if (input_red) {
+            success = redirect_input(input_red);
         }
 
         // output redirection
-        if (cmd_parts->output_file && success != -1) {
-            success = redirect_output(cmd_parts->output_file);
+        if (output_red && success != -1) {
+            success = redirect_output(output_red);
         }
 
         // execute command
@@ -83,20 +91,56 @@ void run_external(struct cmd_line *cmd_parts, int *status, char *status_type) {
 
     } else{
         // parent process
-        child_pid = waitpid(child_pid, &child_status, WNOHANG);
+        //child_pid = waitpid(child_pid, &child_status, 0); //WNOHANG
+        child_pid = parent(&child_pid, &child_status);
         *status = get_status(child_status, status_type);
-        printf("parent reports status: ");
+        //printf("parent reports status: ");
+        //fflush(stdout);
         report_status(*status, *status_type);
     }
 }
 
 
-void run_background(pid_t child_pid) {
-//"background pid is "
+void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type) {
 
-
-
-
-
-//"background pid %d is done: exit value 0"
+    pid_t (*parent) (pid_t*, int*) = run_external_fg_parent;
+    run_external(cmd_parts, status, status_type, NULL, NULL, parent);
 }
+
+
+pid_t run_external_fg_parent(pid_t *child_pid, int *child_status) {
+    *child_pid = waitpid(*child_pid, child_status, 0);
+
+    return *child_pid;
+}
+
+
+void run_external_bg(struct cmd_line *cmd_parts, int *status, char *status_type) {
+    //run_external(cmd_parts, status, status_type, BG_DEFAULT, BG_DEFAULT);
+
+    pid_t (*parent) (pid_t*, int*) = run_external_bg_parent;
+    run_external(cmd_parts, status, status_type,  BG_DEFAULT, BG_DEFAULT, parent);
+}
+
+
+pid_t run_external_bg_parent(pid_t *child_pid, int *child_status) {
+    // report child pid when background process starts
+    printf("background pid is %d\n", *child_pid);
+    fflush(stdout);
+    *child_pid = waitpid(*child_pid, child_status, WNOHANG);
+
+    // report child pid when background process finishes
+    printf("background pid %d is done: ", *child_pid);
+    fflush(stdout);
+    return *child_pid;
+}
+
+
+void run_external_fg_child() {
+}
+
+
+void run_external_bg_child() {
+}
+
+

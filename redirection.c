@@ -15,6 +15,7 @@ int redirect(char *file_name, char *msg, int flags, int new_fd) {
     if (fd == -1) {
         success = fd;
         fprintf(stderr, "cannot open %s for %s\n", file_name, msg);
+        fflush(stdout);
 
     } else {
         success = dup2(fd, new_fd);

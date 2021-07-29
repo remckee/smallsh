@@ -15,6 +15,7 @@ int main (int argc, char *argv[]) {
 
     int status_val = SUCCESS;
     char status_type = EXIT;
+    bool fg_only = false;
 
     while (1) {
         bool skip;
@@ -39,7 +40,18 @@ int main (int argc, char *argv[]) {
             } else {
                 printf("external\n");
                 fflush(stdout);
-                run_external(cmd_parts, &status_val, &status_type);
+
+                if (fg_only || !(cmd_parts->background)) {
+                    printf("running in foreground\n");
+                    fflush(stdout);
+                    run_external_fg(cmd_parts, &status_val, &status_type);
+
+                } else {
+                    printf("running in background\n");
+                    fflush(stdout);
+                    run_external_bg(cmd_parts, &status_val, &status_type);
+
+                }
             }
         }
 

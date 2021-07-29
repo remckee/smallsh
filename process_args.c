@@ -169,9 +169,9 @@ struct cmd_line *get_cmd(bool *skip) {
                     }
                 }
             }
-            if (!(*skip)) {
-                print_cmd(cmd_parts);
-            }
+            //if (!(*skip)) {
+            //    print_cmd(cmd_parts);
+            //}
         }
     }
 
