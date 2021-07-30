@@ -38,6 +38,7 @@ Last edited: 07/29/2021
 #define COMMENT_CHAR        '#'
 #define MAX_CHARS           2048
 #define MAX_ARGS            512
+#define MAX_PROCS           1024
 
 #define EXIT                'e'
 #define TERM                't'
@@ -71,6 +72,9 @@ void free_cmd(struct cmd_line *cmd_parts);
 
 
 /* ltoa.c */
+ssize_t write_number(long num);
+int num_digits_gen(long num, int base);
+int num_digits(long num);
 int ltoa_buf(long num, char *buf, int size, int base);
 int ltoa_dec_buf(long num, char *buf, int size);
 
@@ -83,10 +87,13 @@ char *expand_vars(char *str, pid_t pid, int *nrepls);
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
 bool valid_line(char *line, ssize_t nread);
-struct cmd_line *get_cmd(bool *skip);
+struct cmd_line *get_cmd(bool *skip, pid_t pid);
 
 
 /* run.c */
+void init_procs(pid_t *procs);
+int set_proc(pid_t *procs, pid_t pid);
+void check_procs(pid_t *procs);
 bool is_built_in(char *cmd);
 int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
 // void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
@@ -94,8 +101,8 @@ int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
 //                   pid_t (*parent) (pid_t*, int*, char*));
 
 int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
-void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type);
-void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file);
+void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type, const pid_t sh_pid);
+void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs);
 //void run_external_fg_child();
 //void run_external_bg_child();
 //pid_t run_external_fg_parent(pid_t *child_pid, int *child_status, char *status_type);
@@ -103,8 +110,9 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 
 
 /* sig_handlers.c */
-void init_sig_handlers();
 void handle_SIGINT(int signum);
+void handle_SIGCHLD(int signum);
+void init_sig_handlers();
 
 
 /* exit.c */
@@ -121,9 +129,9 @@ void report_status(int status, char status_type);
 
 
 /* redirection.c */
-int redirect(char *file_name, char *msg, int flags, int new_fd);
-int redirect_input(char *file_name);
-int redirect_output(char *file_name);
+int redirect(struct cmd_line *cmd_parts, char *file_name, char *msg, int flags, int new_fd);
+int redirect_input(struct cmd_line *cmd_parts, char *file_name);
+int redirect_output(struct cmd_line *cmd_parts, char *file_name);
 
 
 /* error_warn.c */

@@ -63,10 +63,23 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 /* Note that a new string will be allocated if any replacements */
 /* are made, so the caller will need to free str if nrepls > 0. */
 char *expand_vars(char *str, pid_t pid, int *nrepls) {
-    int size = log10(pid) + 2;
-    char pid_ascii[size];
+    int size = num_digits(pid);
+    char *result;
 
-    // convert pid to an ascii string and store in pid_ascii
-    ltoa_dec_buf(pid, pid_ascii, sizeof(pid_ascii));
-    return find_replace(PID_VAR, str, pid_ascii, nrepls);
+    if (size > 0) {
+        char pid_ascii[size+1];
+
+        // convert pid to an ascii string and store in pid_ascii
+        size = ltoa_dec_buf(pid, pid_ascii, sizeof(pid_ascii));
+
+        if (size > 0) {
+            result = find_replace(PID_VAR, str, pid_ascii, nrepls);
+        } else {
+            result = NULL;
+        }
+
+    } else {
+        result = NULL;
+    }
+    return result;
 }

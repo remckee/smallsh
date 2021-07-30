@@ -33,6 +33,7 @@ char *print_string_safe(char *str) {
     return (str) ? str : "NULL";
 }
 
+
 void free_cmd(struct cmd_line *cmd_parts) {
     // free memory that may have been allocated to expand $$ variables
     free_safe(cmd_parts->cmd);

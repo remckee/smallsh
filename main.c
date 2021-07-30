@@ -16,16 +16,22 @@ int main (int argc, char *argv[]) {
     int status_val = SUCCESS;
     char status_type = EXIT;
     bool fg_only = false;
+    const pid_t SH_PID = getpid();
+    pid_t bg_procs[MAX_PROCS];
 
-    init_sig_handlers();
+    init_procs(bg_procs);
+
 
     while (1) {
         bool skip;
+        init_sig_handlers();
+        // check on background child processes
+        //check_procs(bg_procs);
 
         // Get command line from user.
         // get_cmd sets skip to false if command was successfully parsed
         // into cmd_parts struct and true otherwise
-        struct cmd_line *cmd_parts = get_cmd(&skip);
+        struct cmd_line *cmd_parts = get_cmd(&skip, SH_PID);
 
         // If a valid non-comment command was successfully parsed,
         // route command to built-in or external.
@@ -50,12 +56,19 @@ int main (int argc, char *argv[]) {
                 if (fg_only || !(cmd_parts->background)) {
                     printf("running in foreground\n");
                     fflush(stdout);
-                    run_external_fg(cmd_parts, &status_val, &status_type);
+                    run_external_fg(cmd_parts, &status_val, &status_type, SH_PID);
 
                 } else {
                     printf("running in background\n");
                     fflush(stdout);
-                    run_external_bg(cmd_parts, BG_DEFAULT, BG_DEFAULT);
+                    run_external_bg(cmd_parts, BG_DEFAULT, BG_DEFAULT, SH_PID, bg_procs);
+
+                    sigset_t empty_mask;
+                    sigemptyset(&empty_mask);
+
+                    if (sigsuspend(&empty_mask) == -1 && errno != EINTR)
+                        perror("sigsuspend");
+
 
                 }
             }

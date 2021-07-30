@@ -74,11 +74,10 @@ bool valid_line(char *line, ssize_t nread) {
 }
 
 
-struct cmd_line *get_cmd(bool *skip) {
+struct cmd_line *get_cmd(bool *skip, pid_t pid) {
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
 
-    pid_t pid = getpid();
     char *line = NULL;          // Stores entire user input, which will be copied
                                 // to buf if it does not exceed the char limit.
     char buf[MAX_CHARS+2];      // MAX_CHARS+2 allows room for \n and \0 at the end
@@ -111,11 +110,16 @@ struct cmd_line *get_cmd(bool *skip) {
         if (!(*skip)) {
             int exp_count = 0;
             arg = expand_vars(arg, pid, &exp_count);
-            cmd_parts->cmd = strdup(arg);
-            cmd_parts->args[cmd_parts->argsc] = cmd_parts->cmd;
-            (cmd_parts->argsc)++;
-            if (exp_count > 0) {
-                free_safe(arg);
+
+            if (arg) {
+                cmd_parts->cmd = strdup(arg);
+                cmd_parts->args[cmd_parts->argsc] = cmd_parts->cmd;
+                (cmd_parts->argsc)++;
+                if (exp_count > 0) {
+                    free_safe(arg);
+                }
+            } else {
+                *skip = true;
             }
 
             int input_next = -1;        // whether the next arg should be an input file
@@ -128,8 +132,9 @@ struct cmd_line *get_cmd(bool *skip) {
                     exp_count = 0;
                     arg = expand_vars(arg, pid, &exp_count);
 
-                    // store arg
-                    if (input_next==1) {
+                    if (!arg) {
+                        *skip = true;
+                    } else if (input_next==1) {
                         cmd_parts->input_file = strdup(arg);
                         input_next = 0;
                     } else if (output_next==1) {

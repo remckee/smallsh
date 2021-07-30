@@ -7,6 +7,52 @@ Last edited: 07/29/2021
 
 #include "smallsh.h"
 
+void init_procs(pid_t *procs) {
+    for (int i = 0; i < MAX_PROCS; i++) {
+        procs[i] = -1;
+    }
+}
+
+int set_proc(pid_t *procs, pid_t pid) {
+    int i = 0;
+    while (i < MAX_PROCS && procs[i] > 0) {
+        i++;
+    }
+
+    if (procs[i] <= 0) {
+        procs[i] = pid;
+    }
+    assert(i < MAX_PROCS);
+    return i;
+}
+
+
+void check_procs(pid_t *procs) {
+    /* int i = 0; */
+    /* while (i < MAX_PROCS && procs[i] != -1) { */
+    /*     if (procs[i] > 0) { */
+    /*         printf("bg pid: %d\n", procs[i]); */
+    /*         fflush(stdout); */
+    /*     } */
+
+    /*     i++; */
+    /* } */
+
+    int pid;
+    int status;
+    char status_type;
+
+    while((pid = waitpid(-1, &status, WNOHANG)) > 0){
+        // report child pid when background process finishes
+        printf("background pid %d is done: ", pid);
+        fflush(stdout);
+
+        status = get_status(status, &status_type);
+        report_status(status, status_type);
+
+    }
+}
+
 
 bool is_built_in(char *cmd) {
     return !strcmp(cmd, "cd") || !strcmp(cmd, "status") || !strcmp(cmd, "exit");
@@ -51,12 +97,12 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
 
     // input redirection
     if (input_red) {
-        success = redirect_input(input_red);
+        success = redirect_input(cmd_parts, input_red);
     }
 
     // output redirection
     if (output_red && success != -1) {
-        success = redirect_output(output_red);
+        success = redirect_output(cmd_parts, output_red);
     }
 
     // execute command
@@ -68,7 +114,7 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
 
 
 // run external command in the foreground
-void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type) {
+void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type, const pid_t sh_pid) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
@@ -90,10 +136,10 @@ void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type)
 
 
 // run external command in the background
-void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file) {
+void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs) {
     pid_t child_pid = fork();
-    int status;
-    char status_type;
+    //int status;
+    //char status_type;
 
     if(child_pid == -1){
         // fork error
@@ -112,14 +158,17 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
         printf("background pid is %d\n", child_pid);
         fflush(stdout);
 
-        child_pid = waitpid(child_pid, &status, WNOHANG);
+        // record the child pid in procs array in first available slot
+        set_proc(procs, child_pid);
 
-        // report child pid when background process finishes
-        printf("background pid %d is done: ", child_pid);
-        fflush(stdout);
+        //child_pid = waitpid(child_pid, &status, WNOHANG);
 
-        status = get_status(status, &status_type);
-        report_status(status, status_type);
+        /* // report child pid when background process finishes */
+        /* printf("background pid %d is done: ", child_pid); */
+        /* fflush(stdout); */
+
+        /* status = get_status(status, &status_type); */
+        /* report_status(status, status_type); */
     }
 }
 
