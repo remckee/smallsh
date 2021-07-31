@@ -10,6 +10,17 @@ int get_s(int c) {
 int main (int argc, char *argv[]) {
     long num = pow_nonreent(atol(argv[1]), atol(argv[2]));
     printf("num: %ld\n", num);
+    int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0
+    //char *result;
+
+  //  if (size > 0) {
+        char pid_ascii[size];
+
+    //int s = ltoa_dec_buf(num, pid_ascii, size);
+    ltoa_dec_buf(num, pid_ascii, size);
+    printf("len num:, ascii: %s\n", pid_ascii);
+
+      write_number (num);
 /*     pid_t pid = getpid(); */
 /*     char *str = "cd$$e q$$x"; */
 /*     int exp_count = 0; */
@@ -36,6 +47,7 @@ int main (int argc, char *argv[]) {
 /*        // struct cmd_line *cmd_parts = get_cmd(&quit); */
 
 /*         if (!skip) { */
+
 /*             assert(cmd_parts->cmd); */
 /*         } */
 

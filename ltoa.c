@@ -114,29 +114,34 @@ long pow_nonreent(long base, long expon) {
 // successful. It returns -1 on error, so caller MUST check
 // that the result is positive before using.
 int ltoa_buf(long num, char *buf, int size, int base) {
-    int len = 20; // 9223372036854775807 has 19 chars
+    int start = 0;
+    memset(buf, '\0', size);
 
-
-    //num_digits_gen(num, base);
-    /* if (len > size) { */
-    /*     len = -1; */
-
-    /* } else  */
-        if (len > 0) {
-        long divisor;
-        long rem;
-        int digit;
-
-        for (int i = 0, l = len; l > 0; l--, i++) {
-            divisor = pow_nonreent(base, l-1);
-            rem = num % divisor;
-            digit = num / divisor;
-            buf[i] = 0x30 + digit;
-            num = rem;
-        }
-        buf[len] = '\0';
+    if (num < 0) {
+        buf[0] = '-';
+        num *= -1;
+        start++;
     }
-    return len;
+
+    int digit;
+    int expon = 0;
+    int i = size-1;
+    buf[i] = '\0';
+    i--;
+
+    for ( ; num > 0 && i >= 0; expon++, i--) {
+        digit = num % base;
+        buf[i] = 0x30 + digit;
+        num /= base;
+    }
+
+    // move digits to begin of array and then write \0 over the rest
+    memmove(&buf[start], &buf[i+1], expon);
+    for (int j = expon; j < size; j++) {
+        buf[start+j] = '\0';
+    }
+
+    return expon;
 }
 
 

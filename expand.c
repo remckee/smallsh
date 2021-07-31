@@ -73,14 +73,14 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 /* Note that a new string will be allocated if any replacements */
 /* are made, so the caller will need to free str if nrepls > 0. */
 char *expand_vars(char *str, pid_t pid, int *nrepls) {
-    int size = num_digits(pid);
+    int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0
     char *result;
 
-    if (size > 0) {
+  //  if (size > 0) {
         char pid_ascii[size+1];
 
         // convert pid to an ascii string and store in pid_ascii
-        size = ltoa_dec_buf(pid, pid_ascii, sizeof(pid_ascii));
+        size = ltoa_dec_buf(pid, pid_ascii, size+1);
 
         if (size > 0) {
             result = find_replace(PID_VAR, str, pid_ascii, nrepls);
@@ -88,8 +88,8 @@ char *expand_vars(char *str, pid_t pid, int *nrepls) {
             result = NULL;
         }
 
-    } else {
-        result = NULL;
-    }
+   // } else {
+  //      result = NULL;
+ //   }
     return result;
 }
