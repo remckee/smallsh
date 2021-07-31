@@ -7,9 +7,9 @@ int get_s(int c) {
 }
 
 
-//int main (int argc, char *argv[]) {
-
-
+int main (int argc, char *argv[]) {
+    long num = pow_nonreent(atol(argv[1]), atol(argv[2]));
+    printf("num: %ld\n", num);
 /*     pid_t pid = getpid(); */
 /*     char *str = "cd$$e q$$x"; */
 /*     int exp_count = 0; */
@@ -45,4 +45,4 @@ int get_s(int c) {
 /*         } */
 /*         free_safe(cmd_parts); */
 //    return 0;
-//}
+}

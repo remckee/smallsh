@@ -28,6 +28,7 @@ Last edited: 07/29/2021
 #include <errno.h>
 #include <signal.h>
 //#include <elf.h>
+#include <limits.h>
 
 
 #define CMD_PROMPT          ':'
@@ -75,6 +76,7 @@ void free_cmd(struct cmd_line *cmd_parts);
 ssize_t write_number(long num);
 int num_digits_gen(long num, int base);
 int num_digits(long num);
+long pow_nonreent(long base, long expon);
 int ltoa_buf(long num, char *buf, int size, int base);
 int ltoa_dec_buf(long num, char *buf, int size);
 
