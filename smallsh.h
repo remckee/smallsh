@@ -74,8 +74,8 @@ void free_cmd(struct cmd_line *cmd_parts);
 
 /* ltoa.c */
 ssize_t write_number(long num);
-int num_digits_gen(long num, int base);
-int num_digits(long num);
+//int num_digits_gen(long num, int base);
+//int num_digits(long num);
 long pow_nonreent(long base, long expon);
 int ltoa_buf(long num, char *buf, int size, int base);
 //int ltoa_buf(long num, char *buf, int base);

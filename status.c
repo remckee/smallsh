@@ -46,7 +46,7 @@ void report_status(int status, char type) {
     write(STDOUT_FILENO, message, msg_len);
     //printf("%d", status);
     write_number(status);
-    write(STDOUT_FILENO, &nl, 2);
+    write(STDOUT_FILENO, &nl, 1);
 }
 
 

@@ -1,26 +1,26 @@
 #include "smallsh.h"
 
-int get_s(int c) {
-    static int s = 0;
+/* int get_s(int c) { */
+/*     static int s = 0; */
 
-    return s;
-}
+/*     return s; */
+/* } */
 
 
-int main (int argc, char *argv[]) {
-    long num = pow_nonreent(atol(argv[1]), atol(argv[2]));
-    printf("num: %ld\n", num);
-    int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0
-    //char *result;
+/* int main (int argc, char *argv[]) { */
+/*     long num = pow_nonreent(atol(argv[1]), atol(argv[2])); */
+/*     printf("num: %ld\n", num); */
+/*     int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0 */
+/*     //char *result; */
 
-  //  if (size > 0) {
-        char pid_ascii[size];
+/*   //  if (size > 0) { */
+/*         char pid_ascii[size]; */
 
-    //int s = ltoa_dec_buf(num, pid_ascii, size);
-    ltoa_dec_buf(num, pid_ascii, size);
-    printf("len num:, ascii: %s\n", pid_ascii);
+/*     //int s = ltoa_dec_buf(num, pid_ascii, size); */
+/*     ltoa_dec_buf(num, pid_ascii, size); */
+/*     printf("len num:, ascii: %s\n", pid_ascii); */
 
-      write_number (num);
+/*       write_number (num); */
 /*     pid_t pid = getpid(); */
 /*     char *str = "cd$$e q$$x"; */
 /*     int exp_count = 0; */
@@ -56,5 +56,5 @@ int main (int argc, char *argv[]) {
 /*             fflush(NULL); */
 /*         } */
 /*         free_safe(cmd_parts); */
-//    return 0;
-}
+/* //    return 0; */
+/* } */

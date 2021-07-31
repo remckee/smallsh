@@ -77,16 +77,16 @@ char *expand_vars(char *str, pid_t pid, int *nrepls) {
     char *result;
 
   //  if (size > 0) {
-        char pid_ascii[size+1];
+    char pid_ascii[size];
 
-        // convert pid to an ascii string and store in pid_ascii
-        size = ltoa_dec_buf(pid, pid_ascii, size+1);
+    // convert pid to an ascii string and store in pid_ascii
+    size = ltoa_dec_buf(pid, pid_ascii, size);
 
-        if (size > 0) {
-            result = find_replace(PID_VAR, str, pid_ascii, nrepls);
-        } else {
-            result = NULL;
-        }
+    if (size > 0) {
+        result = find_replace(PID_VAR, str, pid_ascii, nrepls);
+    } else {
+        result = NULL;
+    }
 
    // } else {
   //      result = NULL;
