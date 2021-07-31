@@ -2,14 +2,14 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 07/30/2021
 **********************/
 
 #include "smallsh.h"
 
 
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
-    const long len_str = strlen(str);           // the original length of str before expansion
+    const long len_str = strlen(str);           // original length of str before replacement
     long len_pat = strlen(pattern);             // length of given pattern
     long len_repl = strlen(repl);               // length of replacement string
     char *next_pat = (strstr(str, pattern));    // pointer to start of next instance of pattern
@@ -17,16 +17,23 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 
     // if next_pat is not NULL, at least one instance of pattern was found
     if (next_pat) {
-        long len_new_str = len_str;                 // length of str after expansions
+        long len_new_str = len_str;                 // length of str after replacements
 
-        // calculate length of string after max possible expansions
-        long max_len = (len_str/len_pat)*(len_repl) + (len_str%len_pat);
+        // If the replacment expands str, calculate length of string after max
+        // possible replacments.
+        // If the replacement shrinks str (e.g., replacement text is shorter than
+        // the pattern), use the original length of str to avoid making new_str smaller
+        // than str.
+        long max_len = (len_repl <= len_pat) ? len_str : (len_str/len_pat)*(len_repl) + (len_str%len_pat);
+
+
         char *new_str = NULL;
         new_str = malloc_safe(new_str, (max_len+1)*sizeof(char));
 
         char *s = str;                          // pointer to current location within str
         char *end = (str+len_str);              // pointer to end of original str
         long i = 0;                             // index in new_str
+
 
         while (s < end) {
             if (!next_pat) {
@@ -35,6 +42,9 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
                 i++;
             } else {
                 (*nrepls)++;
+
+            // Loop through str (via ptr s) character-by-character until an
+            // instance of pattern is found.
                 while (s < next_pat) {
                     new_str[i] = *s;
                     s++;

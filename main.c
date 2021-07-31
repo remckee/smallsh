@@ -19,12 +19,14 @@ int main (int argc, char *argv[]) {
     const pid_t SH_PID = getpid();
     pid_t bg_procs[MAX_PROCS];
 
+    //static volatile int live_children = 0;
+    init_parent_sig_handlers();
     init_procs(bg_procs);
 
 
     while (1) {
         bool skip;
-        init_sig_handlers();
+
         // check on background child processes
         //check_procs(bg_procs);
 

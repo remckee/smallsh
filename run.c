@@ -124,6 +124,7 @@ void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type,
 
     } else if(child_pid == 0){
         // child process
+        init_fg_child_sig_handlers();
         execute_external(cmd_parts, NULL, NULL);
         fg_exit_if_error(cmd_parts, 1, cmd_parts->cmd, status, status_type);
 
@@ -149,6 +150,7 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 
     } else if(child_pid == 0){
         // child process
+        init_bg_child_sig_handlers();
         execute_external(cmd_parts, input_file, output_file);
         bg_exit_if_error(cmd_parts, 1);
 
