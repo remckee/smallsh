@@ -42,13 +42,26 @@ void check_procs(pid_t *procs) {
     int status;
     char status_type;
 
-    while((pid = waitpid(-1, &status, WNOHANG)) > 0){
+//    while((pid = waitpid(-1, &status, WNOHANG)) > 0){
+    int i = 0;
+    while (i < MAX_PROCS && procs[i] >= 0) {
         // report child pid when background process finishes
-        printf("background pid %d is done: ", pid);
-        fflush(stdout);
+        //
+        if (procs[i] > 0) {
+            pid = waitpid(procs[i], &status, WNOHANG);
 
-        status = get_status(status, &status_type);
-        report_status(status, status_type);
+            if (pid > 0) {
+                printf("background pid %d is done: ", pid);
+                fflush(stdout);
+
+                status = get_status(status, &status_type);
+                report_status(status, status_type);
+
+                procs[i] = 0;
+            }
+        }
+
+        i++;
 
     }
 }
@@ -59,7 +72,7 @@ bool is_built_in(char *cmd) {
 }
 
 
-int run_built_in(struct cmd_line *cmd_parts, int status, char status_type) {
+int run_built_in(struct cmd_line *cmd_parts, int status, char status_type, pid_t *pids) {
     int result = -1;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
@@ -82,6 +95,7 @@ int run_built_in(struct cmd_line *cmd_parts, int status, char status_type) {
     } else if (!strcmp(cmd_parts->cmd, "exit")) {
         //printf("run exit\n");
         //fflush(stdout);
+        clean_up_processes(pids);
         myexit(cmd_parts, status);
     } else {
         assert(!is_built_in(cmd_parts->cmd));
@@ -114,7 +128,7 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
 
 
 // run external command in the foreground
-void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type, const pid_t sh_pid) {
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
@@ -128,11 +142,16 @@ void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type,
         execute_external(cmd_parts, NULL, NULL);
         fg_exit_if_error(cmd_parts, 1, cmd_parts->cmd, status, status_type);
 
-    } else{
+    } else {
         // parent process
-        child_pid = waitpid(child_pid, status, 0); //WNOHANG
+        child_pid = waitpid(child_pid, status, 0);
         *status = get_status(*status, status_type);
+
+        if (*status_type == TERM) {
+            report_status(*status, *status_type);
+        }
     }
+    return child_pid;
 }
 
 
@@ -171,6 +190,17 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 
         /* status = get_status(status, &status_type); */
         /* report_status(status, status_type); */
+        sigset_t mask;
+        sigemptyset(&mask);
+        if (sigpending(&mask) == -1) {
+            perror("sigpending");
+            fflush(stdout);
+        } else if (sigismember(&mask, SIGCHLD) == 1) {
+            printf("check_procs\n");
+            fflush(stdout);
+            // check for terminated background child processes and report status
+            check_procs(procs);
+        }
     }
 }
 

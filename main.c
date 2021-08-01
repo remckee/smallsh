@@ -18,6 +18,7 @@ int main (int argc, char *argv[]) {
     //bool fg_only_loc = fg_only;
     const pid_t SH_PID = getpid();
     pid_t bg_procs[MAX_PROCS];
+    //pid_t fg_proc = 0;
 
     //static volatile int live_children = 0;
     init_parent_sig_handlers();
@@ -26,6 +27,12 @@ int main (int argc, char *argv[]) {
 
     while (1) {
         bool skip;
+
+        //printf("top\n");
+        //fflush(stdout);
+
+
+
 
         // check on background child processes
         //check_procs(bg_procs);
@@ -42,7 +49,7 @@ int main (int argc, char *argv[]) {
             if (is_built_in(cmd_parts->cmd)) {
                 //printf("built in\n");
                 //fflush(stdout);
-                int result = run_built_in(cmd_parts, status_val, status_type);
+                int result = run_built_in(cmd_parts, status_val, status_type, bg_procs);
                 if (result==0) {
                    // printf("success\n");
                     //fflush(stdout);
@@ -58,23 +65,71 @@ int main (int argc, char *argv[]) {
                 if (get_fg_only() || !(cmd_parts->background)) {
                     //printf("running in foreground\n");
                     //fflush(stdout);
-                    run_external_fg(cmd_parts, &status_val, &status_type, SH_PID);
+                    run_external_fg(cmd_parts, &status_val, &status_type);
+                    //printf("fg pid: %d\n", fg_proc);
+                    fflush(stdout);
 
                 } else {
                     //printf("running in background\n");
                     //fflush(stdout);
                     run_external_bg(cmd_parts, BG_DEFAULT, BG_DEFAULT, SH_PID, bg_procs);
 
-                    sigset_t empty_mask;
-                    sigemptyset(&empty_mask);
+                    /* sigset_t empty_mask; */
+                    /* sigemptyset(&empty_mask); */
 
-                    if (sigsuspend(&empty_mask) == -1 && errno != EINTR) {
-                        perror("sigsuspend");
-                        fflush(stdout);
-                    }
+                    /* if (sigsuspend(&empty_mask) == -1 && errno != EINTR) { */
+                    /*     perror("sigsuspend"); */
+                    /*     fflush(stdout); */
+                    /* } */
+
+                    //alarm(3);
+                    //for (;;)
+                    //    pause();
                 }
             }
         }
+
+        sigset_t mask;
+        sigemptyset(&mask);
+
+        if (sigpending(&mask) == -1) {
+            perror("sigpending");
+            fflush(stdout);
+        } else { // if (sigismember(&mask, SIGCHLD) == 1)
+            //printf("check_procs\n");
+            //fflush(stdout);
+            // check for terminated background child processes and report status
+            check_procs(bg_procs);
+
+
+            /* int pid; */
+            /* int status; */
+            /* char status_type; */
+
+            /* // check for terminated foreground child processes, and only report */
+            /* // status if it was terminated by a signal */
+            /* if((pid = waitpid(fg_proc, &status, WNOHANG)) > 0) { */
+            /*     printf("getting status \n"); */
+            /*     fflush(stdout); */
+            /*     status = get_status(status, &status_type); */
+            /*     if (status_type == TERM) { */
+            /*         report_status(status, status_type); */
+            /*     } else { */
+            /*         report_status(status, status_type); */
+            /*     } */
+            /* } */
+
+            /* if (pid == -1) { */
+            /*     perror("waitpid error\n"); */
+            /*     fflush(stdout); */
+            /* } */
+
+
+        }
+
+        //printf("bottom\n");
+        //fflush(stdout);
+
         // free memory that may have been allocated when parsing command
         free_cmd(cmd_parts);
     }

@@ -78,3 +78,17 @@ void myexit(struct cmd_line *cmd_parts, int status) {
 
     exit(status);
 }
+
+
+void clean_up_processes(pid_t *pids) {
+
+    int i = 0;
+    while (i < MAX_PROCS && pids[i] >= 0) {
+        if (pids[i] > 0) {
+            kill(pids[i], SIGTERM);
+        }
+        i++;
+    }
+}
+
+

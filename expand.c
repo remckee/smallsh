@@ -86,38 +86,40 @@ int ltoa_buf(long num, char *buf, int size, int base) {
         start++;
     }
 
+    // Determine the value of each digit of num, starting at the right-most
+    // digit of num, and copy it from right to left to buf,
+    // starting at second-to-last char.
+
     int digit;                  // value of current digit of num
     int num_digits = 0;         // used to keep track of the number of digits
     int i = size-1;             // index within buf
     buf[i] = '\0';
     i--;
 
-    // special case for num == 0 since it will not enter the for loop
+    // special case for num == 0 since it will not enter the while loop
     if (num == 0) {
         buf[i] = 0x30;
         num_digits++;
         i--;
     }
 
-    // Determine the value of each digit of num, starting at the right-most
-    // digit of num, and copy it from right to left to buf,
-    // starting at second-to-last char.
-    for ( ; num > 0 && i >= 0; num_digits++, i--) {
+    while (num > 0 && i >= 0) {
         digit = num % base;
         buf[i] = 0x30 + digit;
         num /= base;
+        num_digits++;
+        i--;
     }
 
     // move digits to beginning of array, clearing each src digit after
     // it is copied to dest
     // avoiding possibly nonreentrant function memmove
-    for (int dest = start, src = i+1; src < size; dest++, src++) {
-        assert(dest < src);
+    for (int dest = start, src = i+1; src < size && dest < src; dest++, src++) {
         buf[dest] = buf[src];
         buf[src] = '\0';
     }
 
-    // clearing rest of array
+    // clearing rest of array, just in case it wasn't already cleared
     for (int j = num_digits; j < size; j++) {
         buf[start+j] = '\0';
     }

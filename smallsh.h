@@ -62,10 +62,6 @@ struct cmd_line {
 };
 
 
-/* cmd_line.c */
-
-
-
 /* safe.c */
 void *malloc_safe(void *ptr, size_t size);
 void free_safe(void *ptr);
@@ -92,9 +88,9 @@ void init_procs(pid_t *procs);
 int set_proc(pid_t *procs, pid_t pid);
 void check_procs(pid_t *procs);
 bool is_built_in(char *cmd);
-int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
+int run_built_in(struct cmd_line *cmd_parts, int status, char status_type, pid_t *pids);
 int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
-void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type, const pid_t sh_pid);
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type);
 void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs);
 
 
@@ -102,6 +98,7 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 ssize_t write_number(long num);
 void handle_SIGINT(int signum);
 void handle_SIGCHLD(int signum);
+int init_handle_SIGCHLD();
 int init_no_block(int signum, void (*handler)(int));
 int init_ignore(int signum);
 
@@ -120,6 +117,7 @@ int mycd(char *args[], int argsc);
 int get_status(int wstatus, char *status_type);
 void report_status(int status, char status_type);
 void myexit(struct cmd_line *cmd_parts, int status);
+void clean_up_processes(pid_t *pids);
 
 
 /* redirection.c */
