@@ -50,6 +50,7 @@ Last edited: 07/29/2021
 
 #define BG_DEFAULT          "/dev/null"
 
+
 /* struct for storing parts of a command */
 struct cmd_line {
     char *cmd;
@@ -62,7 +63,7 @@ struct cmd_line {
 
 
 /* cmd_line.c */
-void init_cmd_struct(struct cmd_line *cmd_parts);
+
 
 
 /* safe.c */
@@ -82,6 +83,7 @@ int ltoa_dec_buf(long num, char *buf, int size);
 /* process_args.c */
 int print_cmd(struct cmd_line *cmd_parts);
 bool valid_line(char *line, ssize_t nread);
+void init_cmd_struct(struct cmd_line *cmd_parts);
 struct cmd_line *get_cmd(bool *skip, pid_t pid);
 
 
@@ -91,17 +93,9 @@ int set_proc(pid_t *procs, pid_t pid);
 void check_procs(pid_t *procs);
 bool is_built_in(char *cmd);
 int run_built_in(struct cmd_line *cmd_parts, int status, char status_type);
-// void run_external(struct cmd_line *cmd_parts, int *status, char *status_type,
-//                   char *input_file, char *output_file,
-//                   pid_t (*parent) (pid_t*, int*, char*));
-
 int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
 void run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type, const pid_t sh_pid);
 void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs);
-//void run_external_fg_child();
-//void run_external_bg_child();
-//pid_t run_external_fg_parent(pid_t *child_pid, int *child_status, char *status_type);
-//pid_t run_external_bg_parent(pid_t *child_pid, int *child_status, char *status_type);
 
 
 /* sig_handlers.c */

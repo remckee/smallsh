@@ -74,6 +74,20 @@ bool valid_line(char *line, ssize_t nread) {
 }
 
 
+// Set the members of cmd_parts to initial values.
+void init_cmd_struct(struct cmd_line *cmd_parts) {
+    cmd_parts->cmd = NULL;
+    cmd_parts->argsc = 0;
+    cmd_parts->input_file = NULL;
+    cmd_parts->output_file = NULL;
+    cmd_parts->background = false;
+
+    for (int i = 0; i < MAX_ARGS; i++) {
+        cmd_parts->args[i] = NULL;
+    }
+}
+
+
 struct cmd_line *get_cmd(bool *skip, pid_t pid) {
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
