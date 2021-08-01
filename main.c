@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/29/2021
+Last edited: 07/31/2021
 **********************/
 
 #include "smallsh.h"
@@ -15,7 +15,7 @@ int main (int argc, char *argv[]) {
 
     int status_val = SUCCESS;
     char status_type = EXIT;
-    bool fg_only = false;
+    //bool fg_only_loc = fg_only;
     const pid_t SH_PID = getpid();
     pid_t bg_procs[MAX_PROCS];
 
@@ -40,38 +40,38 @@ int main (int argc, char *argv[]) {
         if (!skip) {
             assert(cmd_parts->cmd);
             if (is_built_in(cmd_parts->cmd)) {
-                printf("built in\n");
-                fflush(stdout);
+                //printf("built in\n");
+                //fflush(stdout);
                 int result = run_built_in(cmd_parts, status_val, status_type);
                 if (result==0) {
-                    printf("success\n");
-                    fflush(stdout);
+                   // printf("success\n");
+                    //fflush(stdout);
                 }
             } else {
-                printf("external\n");
-                fflush(stdout);
+                //printf("external\n");
+                //fflush(stdout);
 
-                if (fg_only) {
+                if (get_fg_only()) {
                     //
                 }
 
-                if (fg_only || !(cmd_parts->background)) {
-                    printf("running in foreground\n");
-                    fflush(stdout);
+                if (get_fg_only() || !(cmd_parts->background)) {
+                    //printf("running in foreground\n");
+                    //fflush(stdout);
                     run_external_fg(cmd_parts, &status_val, &status_type, SH_PID);
 
                 } else {
-                    printf("running in background\n");
-                    fflush(stdout);
+                    //printf("running in background\n");
+                    //fflush(stdout);
                     run_external_bg(cmd_parts, BG_DEFAULT, BG_DEFAULT, SH_PID, bg_procs);
 
                     sigset_t empty_mask;
                     sigemptyset(&empty_mask);
 
-                    if (sigsuspend(&empty_mask) == -1 && errno != EINTR)
+                    if (sigsuspend(&empty_mask) == -1 && errno != EINTR) {
                         perror("sigsuspend");
-
-
+                        fflush(stdout);
+                    }
                 }
             }
         }

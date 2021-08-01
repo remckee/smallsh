@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/29/2021
+Last edited: 07/30/2021
 **********************/
 
 #include "smallsh.h"
@@ -13,16 +13,16 @@ Last edited: 07/29/2021
 ssize_t write_number(long num) {
     long num_len = 21;
 
-    if (num_len > 0) {
+    //if (num_len > 0) {
         char num_ascii[num_len+1];
 
         // convert num to an ascii string and store in num_ascii
-        num_len = ltoa_dec_buf(3486784401, num_ascii, num_len+1);
+        num_len = ltoa_dec_buf(num, num_ascii, num_len+1);
 
         if (num_len > 0) {
             num_len = write(STDOUT_FILENO, &num_ascii, num_len);
         }
-    }
+    //}
 
     // reassign a result of 0 to -1 to indicate an error
     num_len = (num_len==0) ? -1 : num_len;
@@ -130,6 +130,13 @@ int ltoa_buf(long num, char *buf, int size, int base) {
     int i = size-1;             // index within buf
     buf[i] = '\0';
     i--;
+
+    // special case for num == 0 since it will not enter the for loop
+    if (num == 0) {
+        buf[i] = 0x30;
+        num_digits++;
+        i--;
+    }
 
     // Determine the value of each digit of num, starting at the right-most
     // digit of num, and copy it from right to left to buf,

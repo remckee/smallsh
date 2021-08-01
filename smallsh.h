@@ -115,10 +115,17 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 /* sig_handlers.c */
 void handle_SIGINT(int signum);
 void handle_SIGCHLD(int signum);
-void init_ignore(int signum);
+int init_no_block(int signum, void (*handler)(int));
+int init_ignore(int signum);
+
 void init_parent_sig_handlers();
-void init_bg_child_sig_handlers();
 void init_fg_child_sig_handlers();
+void init_bg_child_sig_handlers();
+
+
+/* fg_only_mode.c */
+bool get_fg_only();
+void toggle_fg_only();
 
 
 /* exit.c */

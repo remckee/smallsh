@@ -2,14 +2,10 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/29/2021
+Last edited: 07/31/2021
 **********************/
 
 #include "smallsh.h"
-
-
-
-
 
 
 // SIGINT (CTRL-C)
@@ -17,12 +13,33 @@ Last edited: 07/29/2021
 // child foreground: terminate itself
 void handle_SIGINT(int signum) {
 
+    if (signum == SIGINT) {
+        exit(FAILURE);
+    }
 }
 
 
 // SIGTSTP (CTRL-Z)
 // child foreground or background: ignore
 // parent: enter or exit foreground-only mode
+void handle_SIGTSTP(int signum) {
+
+    if (!get_fg_only()) {
+        char* message = "\nEntering foreground-only mode (& is now ignored)\n";
+        write(STDOUT_FILENO, message, 51);
+        fflush(stdout);
+        write(STDIN_FILENO, "\n", 1);
+        fflush(stdout);
+    } else {
+        char* message = "\nExiting foreground-only mode\n";
+        write(STDOUT_FILENO, message, 31);
+        fflush(stdout);
+        write(STDIN_FILENO, "\n", 1);
+        fflush(stdout);
+    }
+
+    toggle_fg_only();
+}
 
 
 // Based on The Linux Programming Interface: Chapter 26, Listing 26-5
@@ -60,7 +77,7 @@ int init_handle_SIGCHLD() {
     //setbuf(stdout, NULL);   /* Disable buffering of stdout */
 
     sigemptyset(&SIGCHLD_action.sa_mask);
-    SIGCHLD_action.sa_flags = SA_RESTART;
+    SIGCHLD_action.sa_flags = SA_RESTART || SA_NOCLDSTOP;
     SIGCHLD_action.sa_handler = handle_SIGCHLD;
 
     result = sigaction(SIGCHLD, &SIGCHLD_action, NULL);
@@ -85,7 +102,7 @@ int init_handle_SIGCHLD() {
 
 // Initialize a given signal handler for signal signum.
 // Sets sa_mask to empty
-void init_no_block(int signum, void (*handler)(int)) {
+int init_no_block(int signum, void (*handler)(int)) {
     struct sigaction action  = {0};
     action.sa_handler = handler;
 
@@ -94,13 +111,13 @@ void init_no_block(int signum, void (*handler)(int)) {
 
     // Restart any instructions interrupted by this signal
     action.sa_flags = SA_RESTART;
-    sigaction(signum, &action, NULL);
+    return sigaction(signum, &action, NULL);
 }
 
 
 
-void init_ignore(int signum) {
-    init_no_block(signum, SIG_IGN);
+int init_ignore(int signum) {
+    return init_no_block(signum, SIG_IGN);
 
 
     /* struct sigaction ignore_action  = {0}; */
@@ -117,16 +134,10 @@ void init_ignore(int signum) {
 }
 
 
-
-
-
-
-
-
 void init_parent_sig_handlers() {
 
     init_ignore(SIGINT);
-
+    init_no_block(SIGTSTP, handle_SIGTSTP);
 /*     struct sigaction    SIGINT_action  = {0}; */
 /* //                        SIGTSTP_action = {0}, */
 
@@ -153,15 +164,17 @@ void init_parent_sig_handlers() {
 // for exit clean up
 
 
+void init_fg_child_sig_handlers() {
+
+    init_no_block(SIGINT, handle_SIGINT);
+    init_ignore(SIGTSTP);
+
+}
+
+
 void init_bg_child_sig_handlers() {
 
     init_ignore(SIGINT);
-
+    init_ignore(SIGTSTP);
 }
 
-
-void init_fg_child_sig_handlers() {
-
-
-
-}
