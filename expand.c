@@ -68,6 +68,73 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 }
 
 
+// converts a long in the specified base to a char buffer
+// and returns the number of digits in the number if successful.
+int ltoa_buf(long num, char *buf, int size, int base) {
+    // clear buffer; avoiding possibly nonreentrant function memset
+    for (int k = 0; k < size; k++) {
+        buf[k] = '\0';
+    }
+
+    // If num is negative, place the sign in buf[0] and make num positive.
+    // Increment the variable start so that the sign will not be overwritten
+    // when the chars are copied within the array later.
+    int start = 0;
+    if (num < 0) {
+        buf[0] = '-';
+        num *= -1;
+        start++;
+    }
+
+    int digit;                  // value of current digit of num
+    int num_digits = 0;         // used to keep track of the number of digits
+    int i = size-1;             // index within buf
+    buf[i] = '\0';
+    i--;
+
+    // special case for num == 0 since it will not enter the for loop
+    if (num == 0) {
+        buf[i] = 0x30;
+        num_digits++;
+        i--;
+    }
+
+    // Determine the value of each digit of num, starting at the right-most
+    // digit of num, and copy it from right to left to buf,
+    // starting at second-to-last char.
+    for ( ; num > 0 && i >= 0; num_digits++, i--) {
+        digit = num % base;
+        buf[i] = 0x30 + digit;
+        num /= base;
+    }
+
+    // move digits to beginning of array, clearing each src digit after
+    // it is copied to dest
+    // avoiding possibly nonreentrant function memmove
+    for (int dest = start, src = i+1; src < size; dest++, src++) {
+        assert(dest < src);
+        buf[dest] = buf[src];
+        buf[src] = '\0';
+    }
+
+    // clearing rest of array
+    for (int j = num_digits; j < size; j++) {
+        buf[start+j] = '\0';
+    }
+
+    return num_digits;
+}
+
+
+// decimal long to ascii conversion
+// Returns the number of digits in the number if
+// successful. It returns -1 on error, so caller MUST check
+// that the result is positive before using.
+int ltoa_dec_buf(long num, char *buf, int size) {
+    return ltoa_buf(num, buf, size, 10);
+}
+
+
 /* Replaces all instances of PID_VAR in str with pid. */
 /* The number of replacements made is stored in nrepls. */
 /* Note that a new string will be allocated if any replacements */

@@ -72,19 +72,11 @@ char *print_string_safe(char *str);
 void free_cmd(struct cmd_line *cmd_parts);
 
 
-/* ltoa.c */
-ssize_t write_number(long num);
-//int num_digits_gen(long num, int base);
-//int num_digits(long num);
-long pow_nonreent(long base, long expon);
-int ltoa_buf(long num, char *buf, int size, int base);
-//int ltoa_buf(long num, char *buf, int base);
-int ltoa_dec_buf(long num, char *buf, int size);
-
-
 /* expand.c */
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls);
 char *expand_vars(char *str, pid_t pid, int *nrepls);
+int ltoa_buf(long num, char *buf, int size, int base);
+int ltoa_dec_buf(long num, char *buf, int size);
 
 
 /* process_args.c */
@@ -113,6 +105,7 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 
 
 /* sig_handlers.c */
+ssize_t write_number(long num);
 void handle_SIGINT(int signum);
 void handle_SIGCHLD(int signum);
 int init_no_block(int signum, void (*handler)(int));

@@ -8,6 +8,29 @@ Last edited: 07/31/2021
 #include "smallsh.h"
 
 
+// returns a positive value on success
+// returns a negative value on error
+ssize_t write_number(long num) {
+    long num_len = 21;
+
+    //if (num_len > 0) {
+        char num_ascii[num_len+1];
+
+        // convert num to an ascii string and store in num_ascii
+        num_len = ltoa_dec_buf(num, num_ascii, num_len+1);
+
+        if (num_len > 0) {
+            num_len = write(STDOUT_FILENO, &num_ascii, num_len);
+        }
+    //}
+
+    // reassign a result of 0 to -1 to indicate an error
+    num_len = (num_len==0) ? -1 : num_len;
+
+    return num_len;
+}
+
+
 // SIGINT (CTRL-C)
 // parent, child background: ignore
 // child foreground: terminate itself
