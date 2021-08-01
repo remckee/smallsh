@@ -121,17 +121,11 @@ bool get_fg_only();
 void toggle_fg_only();
 
 
-/* exit.c */
-void myexit(struct cmd_line *cmd_parts, int status);
-
-
-/* cd.c */
+/* built_in.c */
 int mycd(char *args[], int argsc);
-
-
-/* status.c */
 int get_status(int wstatus, char *status_type);
 void report_status(int status, char status_type);
+void myexit(struct cmd_line *cmd_parts, int status);
 
 
 /* redirection.c */
