@@ -144,8 +144,6 @@ int ltoa_dec_buf(long num, char *buf, int size) {
 char *expand_vars(char *str, pid_t pid, int *nrepls) {
     int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0
     char *result;
-
-  //  if (size > 0) {
     char pid_ascii[size];
 
     // convert pid to an ascii string and store in pid_ascii
@@ -157,8 +155,5 @@ char *expand_vars(char *str, pid_t pid, int *nrepls) {
         result = NULL;
     }
 
-   // } else {
-  //      result = NULL;
- //   }
     return result;
 }

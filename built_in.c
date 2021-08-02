@@ -46,12 +46,7 @@ int get_status(int wstatus, int *type) {
 void report_status(int status, int type) {
     char *message;
     size_t msg_len = 0;
-    //int status_len = num_digits(status);
-    //char status_ascii[status_len+1];
     char nl = '\n';
-
-    // convert status to an ascii string and store in status_ascii
-    //ltoa_dec_buf(status, status_ascii, sizeof(status_ascii));
 
     if (type==CLD_KILLED) {
         message = "terminated by signal ";
@@ -61,9 +56,7 @@ void report_status(int status, int type) {
         msg_len = 12;
     }
 
-    //printf("%s %d\n", message, status);
     write(STDOUT_FILENO, message, msg_len);
-    //printf("%d", status);
     write_number(status);
     write(STDOUT_FILENO, &nl, 1);
 }
@@ -81,7 +74,6 @@ void myexit(struct cmd_line *cmd_parts, int status) {
 
 
 void clean_up_processes(pid_t *pids) {
-
     int i = 0;
     while (i < MAX_PROCS && pids[i] >= 0) {
         if (pids[i] > 0) {
@@ -92,3 +84,30 @@ void clean_up_processes(pid_t *pids) {
 }
 
 
+bool is_built_in(char *cmd) {
+    return !strcmp(cmd, "cd") || !strcmp(cmd, "status") || !strcmp(cmd, "exit");
+}
+
+
+int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids) {
+    int result = -1;
+
+    if (!strcmp(cmd_parts->cmd, "cd")) {
+        result = mycd(cmd_parts->args, cmd_parts->argsc);
+        warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd, cmd_parts->args[1]);
+
+        char *cur_dir = NULL;
+        cur_dir = getcwd(cur_dir, MAX_CHARS);
+        free_safe (cur_dir);
+
+    } else if (!strcmp(cmd_parts->cmd, "status")) {
+        report_status(status, status_type);
+
+    } else if (!strcmp(cmd_parts->cmd, "exit")) {
+        clean_up_processes(pids);
+        myexit(cmd_parts, status);
+    } else {
+        assert(!is_built_in(cmd_parts->cmd));
+    }
+    return result;
+}
