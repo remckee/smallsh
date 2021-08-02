@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/29/2021
+Last edited: 08/02/2021
 **********************/
 
 #ifndef SMALLSH_H
@@ -29,6 +29,7 @@ Last edited: 07/29/2021
 #include <signal.h>
 //#include <elf.h>
 #include <limits.h>
+#include <sys/time.h>
 
 
 #define CMD_PROMPT          ':'
@@ -88,9 +89,9 @@ void init_procs(pid_t *procs);
 int set_proc(pid_t *procs, pid_t pid);
 void check_procs(pid_t *procs);
 bool is_built_in(char *cmd);
-int run_built_in(struct cmd_line *cmd_parts, int status, char status_type, pid_t *pids);
+int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids);
 int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
-pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type);
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type);
 void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs);
 
 
@@ -101,6 +102,8 @@ void handle_SIGCHLD(int signum);
 int init_handle_SIGCHLD();
 int init_no_block(int signum, void (*handler)(int));
 int init_ignore(int signum);
+int init_pause_SIGTSTP();
+int init_handle_SIGTSTP();
 
 void init_parent_sig_handlers();
 void init_fg_child_sig_handlers();
@@ -114,8 +117,8 @@ void toggle_fg_only();
 
 /* built_in.c */
 int mycd(char *args[], int argsc);
-int get_status(int wstatus, char *status_type);
-void report_status(int status, char status_type);
+int get_status(int wstatus, int *type);
+void report_status(int status, int type);
 void myexit(struct cmd_line *cmd_parts, int status);
 void clean_up_processes(pid_t *pids);
 
@@ -128,7 +131,7 @@ int redirect_output(struct cmd_line *cmd_parts, char *file_name);
 
 /* error_warn.c */
 void fg_exit_if_error(struct cmd_line *cmd_parts, bool condition, char *msg,
-                      int *status, char *status_type);
+                      int *status, int *status_type);
 void bg_exit_if_error(struct cmd_line *cmd_parts, bool condition);
 void warn_dne(bool condition, char *program, char *file_name);
 bool warn_args(bool condition, int max_args);

@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/29/2021
+Last edited: 08/02/2021
 **********************/
 
 #include "smallsh.h"
@@ -40,7 +40,7 @@ void check_procs(pid_t *procs) {
 
     int pid;
     int status;
-    char status_type;
+    int status_type;
 
 //    while((pid = waitpid(-1, &status, WNOHANG)) > 0){
     int i = 0;
@@ -72,7 +72,7 @@ bool is_built_in(char *cmd) {
 }
 
 
-int run_built_in(struct cmd_line *cmd_parts, int status, char status_type, pid_t *pids) {
+int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids) {
     int result = -1;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
@@ -128,7 +128,7 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
 
 
 // run external command in the foreground
-pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type) {
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
@@ -139,15 +139,50 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type
     } else if(child_pid == 0){
         // child process
         init_fg_child_sig_handlers();
+        //setpgid(child_pid, getsid(child_pid));
+
         execute_external(cmd_parts, NULL, NULL);
         fg_exit_if_error(cmd_parts, 1, cmd_parts->cmd, status, status_type);
 
     } else {
-        // parent process
-        child_pid = waitpid(child_pid, status, 0);
-        *status = get_status(*status, status_type);
+        siginfo_t info;
+        memset(&info, 0, sizeof(siginfo_t));
 
-        if (*status_type == TERM) {
+        // parent process
+        //setpgid(child_pid, getsid(child_pid));
+        //init_pause_SIGTSTP();
+
+        sigset_t block_mask;
+        sigemptyset(&block_mask);
+        sigaddset(&block_mask, SIGTSTP);
+
+        int result = sigprocmask(SIG_SETMASK, &block_mask, NULL);
+        if (result == -1) {
+            perror("sigprocmask");
+        }
+
+        //child_pid = waitpid(child_pid, status, 0);
+        child_pid = waitid(P_PID, child_pid, &info, WEXITED);
+
+        /* sigset_t empty_mask; */
+        /* sigemptyset(&empty_mask); */
+
+        /* if (sigsuspend(&empty_mask) == -1 && errno != EINTR) { */
+        /*     perror("sigsuspend"); */
+        /*     fflush(stdout); */
+        /* } */
+
+        sigemptyset(&block_mask);
+        result = sigprocmask(SIG_SETMASK, &block_mask, NULL);
+        if (result == -1) {
+            perror("sigprocmask");
+        }
+
+        //init_handle_SIGTSTP();
+        *status = info.si_status; //get_status(*status, status_type);
+        *status_type = info.si_code;
+        if (*status_type == CLD_KILLED) {
+            //*status_type = 't';
             report_status(*status, *status_type);
         }
     }
@@ -159,7 +194,7 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, char *status_type
 void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, const pid_t sh_pid, pid_t *procs) {
     pid_t child_pid = fork();
     //int status;
-    //char status_type;
+    //int status_type;
 
     if(child_pid == -1){
         // fork error
@@ -190,17 +225,17 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_
 
         /* status = get_status(status, &status_type); */
         /* report_status(status, status_type); */
-        sigset_t mask;
-        sigemptyset(&mask);
-        if (sigpending(&mask) == -1) {
-            perror("sigpending");
-            fflush(stdout);
-        } else if (sigismember(&mask, SIGCHLD) == 1) {
-            printf("check_procs\n");
-            fflush(stdout);
-            // check for terminated background child processes and report status
-            check_procs(procs);
-        }
+        /* sigset_t mask; */
+        /* sigemptyset(&mask); */
+        /* if (sigpending(&mask) == -1) { */
+        /*     perror("sigpending"); */
+        /*     fflush(stdout); */
+        /* } else if (sigismember(&mask, SIGCHLD) == 1) { */
+        /*     printf("check_procs\n"); */
+        /*     fflush(stdout); */
+        /*     // check for terminated background child processes and report status */
+        /*     check_procs(procs); */
+        /* } */
     }
 }
 

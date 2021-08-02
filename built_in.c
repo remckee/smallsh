@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/31/2021
+Last edited: 08/02/2021
 **********************/
 
 #include "smallsh.h"
@@ -27,15 +27,15 @@ int mycd(char *args[], int argsc) {
 }
 
 
-int get_status(int wstatus, char *type) {
+int get_status(int wstatus, int *type) {
     int status;
 
     if(WIFEXITED(wstatus)){
-        *type = EXIT;
+        *type = CLD_EXITED;
         status = WEXITSTATUS(wstatus);
 
     } else if(WIFSIGNALED(wstatus)) {
-        *type = TERM;
+        *type = CLD_KILLED;
         status = WTERMSIG(wstatus);
 
     }
@@ -43,7 +43,7 @@ int get_status(int wstatus, char *type) {
 }
 
 
-void report_status(int status, char type) {
+void report_status(int status, int type) {
     char *message;
     size_t msg_len = 0;
     //int status_len = num_digits(status);
@@ -53,7 +53,7 @@ void report_status(int status, char type) {
     // convert status to an ascii string and store in status_ascii
     //ltoa_dec_buf(status, status_ascii, sizeof(status_ascii));
 
-    if (type==TERM) {
+    if (type==CLD_KILLED) {
         message = "terminated by signal ";
         msg_len = 22;
     } else {

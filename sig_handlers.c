@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/31/2021
+Last edited: 08/02/2021
 **********************/
 
 #include "smallsh.h"
@@ -63,49 +63,113 @@ void handle_SIGTSTP(int signum) {
 }
 
 
-// Based on The Linux Programming Interface: Chapter 26, Listing 26-5
-//
-// for notifying parent that child background process is complete
-void handle_SIGCHLD(int signum) {
-    int status, saved_errno;
-    pid_t pid;
-    char status_type;
+void pause_SIGTSTP(int signum) {
+    /* sigset_t block_mask; */
 
-    saved_errno = errno;
 
-    while((pid = waitpid(-1, &status, WNOHANG)) > 0){
-        // report child pid when background process finishes
-        write(STDOUT_FILENO, "background pid %d is done: ", 50); //, pid
-        fflush(stdout);
+    /* int result = sigprocmask(SIG_SETMASK, &block_mask, NULL); */
+    /* if (result == -1) { */
+    /*     perror("sigprocmask"); */
+    /* } */
 
-        status = get_status(status, &status_type);
-        report_status(status, status_type);
-
-    }
-
-    if (pid == -1 && errno != ECHILD) {
-        // errMsg("waitpid");
-    }
-    errno = saved_errno;
+    pause();
+    //handle_SIGTSTP(signum);
 }
 
 
-// https://man7.org/linux/man-pages/man3/wait.3p.html#EXAMPLES
-static void
-handle_sigchld(int signum, siginfo_t *sinfo, void *unused)
-{
-    int sav_errno = errno;
-    /* int wstatus; */
-    /* char type; */
-    /* pid_t pid = sinfo->si_pid; */
 
+
+
+
+// Based on The Linux Programming Interface: Chapter 26, Listing 26-5
+//
+// for notifying parent that child background process is complete
+/* void handle_SIGCHLD(int signum) { */
+/*     int status, saved_errno; */
+/*     pid_t pid; */
+/*     int status_type; */
+
+/*     saved_errno = errno; */
+
+/*     while((pid = waitpid(-1, &status, WNOHANG)) > 0){ */
+/*         // report child pid when background process finishes */
+/*         write(STDOUT_FILENO, "background pid %d is done: ", 50); //, pid */
+/*         fflush(stdout); */
+
+/*         status = get_status(status, &status_type); */
+/*         report_status(status, status_type); */
+
+/*     } */
+
+/*     if (pid == -1 && errno != ECHILD) { */
+/*         // errMsg("waitpid"); */
+/*     } */
+/*     errno = saved_errno; */
+/* } */
+
+
+// https://man7.org/linux/man-pages/man3/wait.3p.html#EXAMPLES
+void handle_sigchld(int signum) {
+    int sav_errno = errno;
+
+    static char msg4[] = "starting\n";
+    write(STDOUT_FILENO, msg4, 15);
+    fflush(stdout);
+
+    siginfo_t info;
+    memset(&info, 0, sizeof(siginfo_t));
+    //int wstatus;
+    //int type;
+    pid_t pid;
+    bool remaining = true;
     /*
     * Obtain status information for the child which
     * caused the SIGCHLD signal and write its exit code
     * to stdout.
     */
-    /* waitpid(-1, &wstatus, 0); */
+    int result;// = waitid(P_ALL, 0, &info, WEXITED | WNOHANG);
 
+    while ((result = waitid(P_ALL, 0, &info, WEXITED | WNOHANG)) != -1
+           && remaining) {
+        if (info.si_pid == 0) {
+            /* No children changed state */
+            static char msg1[] = "background nod ";
+            write(STDOUT_FILENO, msg1, 15);
+            fflush(stdout);
+            remaining = false;
+        } else {
+            pid = info.si_pid;
+
+            // report child pid when background process finishes
+            static char msg1[] = "background pid ";
+            write(STDOUT_FILENO, msg1, 15);
+            fflush(stdout);
+
+            int num_written = write_number(pid);
+
+            if (num_written == -1) {
+                static char msg[] = "write_number() failed\n";
+                write(STDOUT_FILENO, msg, 22);
+                fflush(stdout);
+            } else {
+                static char msg2[] = " is done: ";
+                write(STDOUT_FILENO, msg2, 10);
+                fflush(stdout);
+
+                //int status_num = get_status(wstatus,  &type);
+                //report_status(status_num, type);
+                //
+                int status = info.si_status; //get_status(*status, status_type);
+                int status_type = info.si_code;
+                report_status(status, status_type);
+            }
+        }
+    }
+
+    if (result == -1) {
+        perror("waitid");
+        fflush(stdout);
+    }
     /* if (sinfo->si_code == CLD_EXITED) { */
     /*     static char msg[] = "wrong si_code\n"; */
     /*     write(STDOUT_FILENO, msg, sizeof msg - 1); */
@@ -144,8 +208,8 @@ handle_sigchld(int signum, siginfo_t *sinfo, void *unused)
 int init_handle_SIGCHLD() {
     struct sigaction action = {0};
 
-    action.sa_flags = SA_SIGINFO | SA_RESTART;
-    action.sa_sigaction = handle_sigchld;
+    action.sa_flags = SA_RESTART;
+    action.sa_handler = handle_sigchld;
 
     sigemptyset(&action.sa_mask);
     sigaddset(&action.sa_mask, SIGCHLD);
@@ -167,7 +231,7 @@ int init_handle_SIGCHLD() {
     /* //setbuf(stdout, NULL);    */ /* Disable buffering of stdout */
 
     /* sigemptyset(&SIGCHLD_action.sa_mask); */
-    /* SIGCHLD_action.sa_flags = SA_RESTART || SA_NOCLDSTOP; */
+    /* SIGCHLD_action.sa_flags = SA_RESTART | SA_NOCLDSTOP; */
     /* SIGCHLD_action.sa_handler = handle_SIGCHLD; */
 
     /* result = sigaction(SIGCHLD, &SIGCHLD_action, NULL); */
@@ -265,6 +329,16 @@ int init_ignore_block_no_restart(int signum) {
 }
 
 
+int init_pause_SIGTSTP() {
+    return init_no_block_no_restart(SIGTSTP, pause_SIGTSTP);
+}
+
+
+int init_handle_SIGTSTP() {
+    return init_no_block_no_restart(SIGTSTP, handle_SIGTSTP);
+}
+
+
 void init_parent_sig_handlers() {
 
     init_ignore(SIGINT);
@@ -305,7 +379,7 @@ void init_parent_sig_handlers() {
 
 void init_fg_child_sig_handlers() {
 
-    init_no_block(SIGINT, SIG_DFL); //default : SIG_DFL
+    init_block_all_no_restart(SIGINT, SIG_DFL); //default : SIG_DFL
     init_ignore(SIGTSTP);
 
 }

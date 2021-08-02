@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/31/2021
+Last edited: 08/02/2021
 **********************/
 
 #include "smallsh.h"
@@ -14,7 +14,7 @@ int main (int argc, char *argv[]) {
     /* } */
 
     int status_val = SUCCESS;
-    char status_type = EXIT;
+    int status_type = CLD_EXITED;
     //bool fg_only_loc = fg_only;
     const pid_t SH_PID = getpid();
     pid_t bg_procs[MAX_PROCS];
@@ -89,17 +89,17 @@ int main (int argc, char *argv[]) {
             }
         }
 
-        sigset_t mask;
-        sigemptyset(&mask);
+        /* sigset_t mask; */
+        /* sigemptyset(&mask); */
 
-        if (sigpending(&mask) == -1) {
-            perror("sigpending");
-            fflush(stdout);
-        } else { // if (sigismember(&mask, SIGCHLD) == 1)
-            //printf("check_procs\n");
-            //fflush(stdout);
-            // check for terminated background child processes and report status
-            check_procs(bg_procs);
+        /* if (sigpending(&mask) == -1) { */
+        /*     perror("sigpending"); */
+        /*     fflush(stdout); */
+        /* } else { // if (sigismember(&mask, SIGCHLD) == 1) */
+        /*     //printf("check_procs\n"); */
+        /*     //fflush(stdout); */
+        /*     // check for terminated background child processes and report status */
+        /*     check_procs(bg_procs); */
 
 
             /* int pid; */
@@ -112,7 +112,7 @@ int main (int argc, char *argv[]) {
             /*     printf("getting status \n"); */
             /*     fflush(stdout); */
             /*     status = get_status(status, &status_type); */
-            /*     if (status_type == TERM) { */
+            /*     if (status_type == CLD_KILLED) { */
             /*         report_status(status, status_type); */
             /*     } else { */
             /*         report_status(status, status_type); */
@@ -125,7 +125,7 @@ int main (int argc, char *argv[]) {
             /* } */
 
 
-        }
+        /* } */
 
         //printf("bottom\n");
         //fflush(stdout);

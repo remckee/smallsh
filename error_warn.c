@@ -2,7 +2,7 @@
 Name: Rebecca Mckeever
 Course: CS 344
 Assignment 3
-Last edited: 07/28/2021
+Last edited: 08/02/2021
 **********************/
 
 #include "smallsh.h"
@@ -22,12 +22,12 @@ Last edited: 07/28/2021
 /* } */
 
 void fg_exit_if_error(struct cmd_line *cmd_parts, bool condition, char *msg,
-                      int *status, char *status_type) {
+                      int *status, int *status_type) {
     if (condition) {
         perror(msg);
         fflush(stdout);
-        *status_type = EXIT;
         *status = FAILURE;
+        *status_type = CLD_EXITED;
         myexit(cmd_parts, *status);
     }
 }
@@ -36,7 +36,7 @@ void fg_exit_if_error(struct cmd_line *cmd_parts, bool condition, char *msg,
 void bg_exit_if_error(struct cmd_line *cmd_parts, bool condition) {
     if (condition) {
         int status = FAILURE;
-        char status_type = EXIT;
+        int status_type = CLD_EXITED;
         report_status(status, status_type);
         myexit(cmd_parts, status);
     }
