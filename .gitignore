@@ -7,7 +7,7 @@
 
 #unignore .c, .h, and .sh and this file, and the README
 !.gitignore
-!README.txt
+!README.md
 !*.c
 !*.h
 !*.sh
