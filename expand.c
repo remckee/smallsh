@@ -1,64 +1,82 @@
-/*********************
-Name: Rebecca Mckeever
-Course: CS 344
-Assignment 3
-Last edited: 07/30/2021
-**********************/
-
 #include "smallsh.h"
 
 
+// This function finds each occurrence of pattern in str and replaces it with
+// repl. The resulting string is returned, and the number of replacements made
+// is placed in pointer nrepls. The string is allocated only if at least one
+// replacement was made, so the caller must check that nrepls is greater than
+// 0 before calling free on the returned string. If no replacements are made,
+// it returns str unchanged.
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
-    const long len_str = strlen(str);           // original length of str before replacement
+    const long len_str = strlen(str);           // original length of str
     long len_pat = strlen(pattern);             // length of given pattern
     long len_repl = strlen(repl);               // length of replacement string
-    char *next_pat = (strstr(str, pattern));    // pointer to start of next instance of pattern
+    char *next_pat = (strstr(str, pattern));    // pointer to start of next instance
+                                                // of pattern
     *nrepls = 0;
 
     // if next_pat is not NULL, at least one instance of pattern was found
     if (next_pat) {
         long len_new_str = len_str;                 // length of str after replacements
 
-        // If the replacment expands str, calculate length of string after max
-        // possible replacments.
+        // If the replacment expands str (len_repl > len_pat), calculate length
+        // of string after max possible replacments.
         // If the replacement shrinks str (e.g., replacement text is shorter than
         // the pattern), use the original length of str to avoid making new_str smaller
-        // than str.
-        long max_len = (len_repl <= len_pat) ? len_str : (len_str/len_pat)*(len_repl) + (len_str%len_pat);
+        // than str, since we don't yet know how many replacements will be made.
+        long max_len = (len_repl > len_pat)
+            ? (len_str/len_pat)*(len_repl) + (len_str%len_pat) : len_str;
 
-
+        // allocate the string to be returned
         char *new_str = NULL;
-        new_str = malloc_safe(new_str, (max_len+1)*sizeof(char));
+        new_str = malloc((max_len+1)*sizeof(char));
+
+        // if malloc failed, display an error message and return NULL immediately
+        if (warn_error(new_str==NULL, "NULL ptr")) {
+            return NULL;
+        }
+
+        // Iterate through str to find and replace each instance of pattern.
 
         char *s = str;                          // pointer to current location within str
         char *end = (str+len_str);              // pointer to end of original str
         long i = 0;                             // index in new_str
 
-
         while (s < end) {
             if (!next_pat) {
+                // If there are no more instances of pattern,
+                // copy the rest of str into new_str
                 new_str[i] = *s;
                 s++;
                 i++;
             } else {
+                // Increment number of replacements made, and update
+                // the length of the new string.
                 (*nrepls)++;
+                len_new_str += (len_repl - len_pat);
 
-            // Loop through str (via ptr s) character-by-character until an
-            // instance of pattern is found.
+            // Loop through str (via ptr s) character-by-character, copying
+            // to new_str, until the next instance of pattern (found previously).
                 while (s < next_pat) {
                     new_str[i] = *s;
                     s++;
                     i++;
                 }
+
+                // copy the replacement into new_str
                 for (int j = 0; j < len_repl; j++) {
                     new_str[i] = repl[j];
                     i++;
                 }
+                // Move s to the char after the pattern, then search for
+                // the next instance of pattern.
                 s = (next_pat+len_pat);
                 next_pat = strstr(s, pattern);
-                len_new_str += (len_repl - len_pat);
             }
         }
+
+        // Add null terminator, reallocate new_str according to actual
+        // size, and assign to str.
         new_str[i] = '\0';
         new_str = realloc(new_str, (i+1) * sizeof(char));
         assert(new_str != NULL);
@@ -68,8 +86,9 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 }
 
 
-// converts a long in the specified base to a char buffer
+// Converts a long in the specified base to a char buffer
 // and returns the number of digits in the number if successful.
+// Returns 0 if it failed.
 int ltoa_buf(long num, char *buf, int size, int base) {
     // clear buffer; avoiding possibly nonreentrant function memset
     for (int k = 0; k < size; k++) {
@@ -129,9 +148,8 @@ int ltoa_buf(long num, char *buf, int size, int base) {
 
 
 // decimal long to ascii conversion
-// Returns the number of digits in the number if
-// successful. It returns -1 on error, so caller MUST check
-// that the result is positive before using.
+// Returns the number of digits in the number if successful.
+// Returns 0 if it failed.
 int ltoa_dec_buf(long num, char *buf, int size) {
     return ltoa_buf(num, buf, size, 10);
 }
@@ -141,14 +159,42 @@ int ltoa_dec_buf(long num, char *buf, int size) {
 /* The number of replacements made is stored in nrepls. */
 /* Note that a new string will be allocated if any replacements */
 /* are made, so the caller will need to free str if nrepls > 0. */
-char *expand_vars(char *str, pid_t pid, int *nrepls) {
-    int size = 21; // 9223372036854775807 has 19 chars + 2 for sign and \0
+/* Returns the allocated string if any replacements were made */
+/* Returns an unallocated string identical to str if no replacements were made */
+/* Return NULL if an error occurred */
+char *expand_vars(char *str, char *pid, int *nrepls) {
     char *result;
-    char pid_ascii[size];
+
+    // If pid has at least 1 char, replace all instances of PID_VAR with pid
+    if (strlen(pid) > 0) {
+        result = find_replace(PID_VAR, str, pid, nrepls);
+    } else {
+        result = NULL;
+    }
+
+    return result;
+}
+
+
+/* A version of expand_vars that takes an unconverted, integer (pid_t) argument */
+/* for pid. Note that this function is not used in the program currently. */
+
+/* There are two versions because expand_vars_num was the original */
+/* version, but using that required the same pid value to be converted to a string */
+/* each time it was used in a run of smallsh, which seemed inefficient. I decided */
+/* to leave this version in the program in case it would be useful. */
+/* Return value and functionality are the same as expand_vars() */
+char *expand_vars_num(char *str, pid_t pid, int *nrepls) {
+    int size = 21;          // Max number of characters for a long:
+                            // 9223372036854775807 has 19 chars + 2 for sign and \0
+
+    char *result;
+    char pid_ascii[size];   // used to store the assci characters of pid
 
     // convert pid to an ascii string and store in pid_ascii
     size = ltoa_dec_buf(pid, pid_ascii, size);
 
+    // If conversion was successful, replace all instances of PID_VAR with pid
     if (size > 0) {
         result = find_replace(PID_VAR, str, pid_ascii, nrepls);
     } else {
@@ -157,3 +203,4 @@ char *expand_vars(char *str, pid_t pid, int *nrepls) {
 
     return result;
 }
+
