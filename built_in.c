@@ -1,20 +1,18 @@
 #include "smallsh.h"
 
 
-/*
- * Writes num to stdout using only non-reentrant functions.
- * returns a positive value on success
- * returns a negative value on error
+/**
+ * write_number():
+ * Write @num to stdout using only non-reentrant functions.
+ * @num: the number to write
  *
- * Note that non-reentrancy is not required in the current version
- * of the program, since none of the signal handlers use write_number(),
- * but it was required for a signal handler that has been removed.
+ * Return:
+ * a positive value on success or a negative value on error
  */
 ssize_t write_number(long num) {
-    int num_len = 21;  // 9223372036854775807 has 19 chars + 2 for sign and \0
+    int num_len = 21; /* LONG_MAX (2^63 - 1) has 19 chars + sign + \0 */
     char num_ascii[num_len];
 
-    // convert num to an ascii string and store in num_ascii
     num_len = ltoa_dec_buf(num, num_ascii, num_len);
 
     if (num_len > 0) {
@@ -22,39 +20,45 @@ ssize_t write_number(long num) {
         fflush(stdout);
     }
 
-    // reassign a result of 0 to -1 to indicate an error
     num_len = (num_len==0) ? -1 : num_len;
 
     return num_len;
 }
 
 
-/*
- * Changes current working directory to a named directory or HOME.
- * Returns -1 upon error.
+/**
+ * mycd():
+ * Change current working directory to a named directory (@args[1]) or HOME.
+ * @args: an array of user-provided arguments
+ * @argsc: the number of elements in args
+ *
+ * Return:
+ * a positive value on success or a negative value on error
  */
 int mycd(char *args[], int argsc) {
     int success = -1;
 
     if (argsc > 1) {
-        // change to named directory if an argument was provided
         success = chdir(args[1]);
 
     } else if (args[0]) {
-        // change to HOME directory
         success = chdir(getenv("HOME"));
-
-        // assert if there is an error changing to HOME directory
         assert(success != -1);
     }
     return success;
 }
 
 
-/*
- * Uses the status value obtained from a waitpid call (wstatus) to determine
- * whether the process exited or was terminated by a signal (type). Returns
- * either the exit value or number of the signal that caused termination.
+/**
+ * get_status():
+ * Determine whether the process exited or was terminated by a signal and get
+ * the status value.
+ * @wstatus: the status value obtained from a waitpid() call
+ * @type: out parameter indicating whether the last foreground process exited
+ *        (CLD_EXITED) or was terminated by a signal (CLD_KILLED)
+ * Return:
+ * either the exit value or the number of the signal that caused termination of
+ * the last foreground process
  */
 int get_status(int wstatus, int *type) {
     int status;
@@ -72,13 +76,12 @@ int get_status(int wstatus, int *type) {
 }
 
 
-/*
- * Write the status with the given type (exited vs. terminated by signal)
- * and value to stdout.
- *
- * Note that non-reentrancy is not required in the current version
- * of the program, since none of the signal handlers use report_status(),
- * but it was required for a signal handler that has been removed.
+/**
+ * report_status():
+ * Write the @status and @type of the last foreground process to stdout.
+ * @status: either exit value or number of the signal that caused termination
+ * @type: the type of status, indicating whether the process exited (CLD_EXITED)
+ *        or was terminated by a signal (CLD_KILLED)
  */
 void report_status(int status, int type) {
     char *message;
@@ -101,9 +104,12 @@ void report_status(int status, int type) {
 }
 
 
-/*
- * Perform clean-up and then exit shell. Frees memory allocated by
- * last command, kills all child processes, then exits with the given status.
+/**
+ * @myexit():
+ * Perform clean-up and then exit shell.
+ * @cmd_parts: data allocated by last command
+ * @status: exit value
+ * @pids: an array of child processes to kill
  */
 void myexit(struct cmd_line *cmd_parts, int status, pid_t *pids) {
     free_cmd(cmd_parts);
@@ -112,39 +118,60 @@ void myexit(struct cmd_line *cmd_parts, int status, pid_t *pids) {
 }
 
 
-// Free memory allocated when parsing most recent command.
+/**
+ * free_cmd():
+ * Free memory allocated when parsing the most recent command.
+ * @cmd_parts: data allocated by last command
+ */
 void free_cmd(struct cmd_line *cmd_parts) {
-    // free memory that may have been allocated to expand $$ variables
     free(cmd_parts->cmd);
     free(cmd_parts->input_file);
     free(cmd_parts->output_file);
 
-    // Free memory allocated to elements of args array.
-    // Start at 1 because cmd_parts->args[0] is a pointer to cmd_parts->cmd,
-    // which was already freed.
+    /*
+     * Start at 1 because cmd_parts->args[0] is a pointer to cmd_parts->cmd,
+     * which was already freed.
+     */
     for (int i = 1; i < cmd_parts->argsc && cmd_parts->args[i]; i++) {
         free(cmd_parts->args[i]);
     }
 
-    // free memory allocated to struct
     free(cmd_parts);
 }
 
 
-// Returns whether the given command is one of the three built in commands.
+/**
+ * is_built_in():
+ * Determine whether a command is one of the built in commands.
+ * @cmd: the name of the command
+ *
+ * Return:
+ * true if @cmd is a built in command, false otherwise
+ */
 bool is_built_in(char *cmd) {
     return !strcmp(cmd, "cd") || !strcmp(cmd, "status") || !strcmp(cmd, "exit");
 }
 
 
-// Run one of the built in commands. Returns -1 upon error.
+/**
+ * run_built_in():
+ * Run one of the built in commands.
+ * @cmd_parts: the parsed parts of the command
+ * @status: either exit value or number of the signal that caused termination of
+ *          the last foreground process
+ * @status_type: the type of status, indicating whether the process exited
+ *               (CLD_EXITED) or was terminated by a signal (CLD_KILLED)
+ *
+ * Return:
+ * a positive value on success or a negative value on error
+ */
 int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids) {
     int result = 0;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
         result = mycd(cmd_parts->args, cmd_parts->argsc);
 
-        // Display a warning to the user if the given directory does not exist.
+        /* Display a warning if the given directory does not exist */
         warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd, cmd_parts->args[1]);
 
     } else if (!strcmp(cmd_parts->cmd, "status")) {

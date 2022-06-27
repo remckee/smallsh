@@ -1,11 +1,12 @@
 #include "smallsh.h"
 
 
-/*
- * Initialize all elements in procs array to -1. The value -1 is used
- * to indicate which elements in the array haven't been used yet. Then,
- * when iterating through the array, we can stop when we reach an element
- * whose value is -1, rather than going through the entire array.
+/**
+ * init_procs():
+ * Initialize all elements in an array to -1. Then, when iterating through the
+ * array, we can stop when we reach an element whose value is -1, rather than
+ * going through the entire array.
+ * @procs: the array to initialize
  */
 void init_procs(pid_t *procs) {
     for (int i = 0; i < MAX_PROCS; i++) {
@@ -13,12 +14,16 @@ void init_procs(pid_t *procs) {
     }
 }
 
-/*
- * Find the first element of procs array (which stores the pids of active
- * bg processes) whose value is negative or 0, and set it equal to pid.
- * An element will have a value of 0 if it was previously used by a bg
- * process that has since completed. An element will have a value of -1
- * if it has not been used yet. Returns the index where pid was inserted.
+/**
+ * set_proc():
+ * Set the first available slot in @procs to @pid. An available slot has a
+ * value <= 0. A slot will be 0 if it was used by a bg process that has
+ * completed. A slot will be -1 if it has not been used yet.
+ * @procs: the array of processes
+ * @pid: the pid of the process being added
+ *
+ * Returns:
+ * the index where @pid was inserted
  */
 int set_proc(pid_t *procs, pid_t pid) {
     int i = 0;
@@ -34,9 +39,14 @@ int set_proc(pid_t *procs, pid_t pid) {
 }
 
 
-/*
- * Check on the bg processes in procs array, and report the status for any that
- * have terminated. Returns the number of processes that have terminated.
+/**
+ * check_procs():
+ * Check on the bg processes in @procs, and report the status for any that
+ * have terminated.
+ * @procs: the array of processes
+ *
+ * Returns:
+ * the number of processes that have terminated
  */
 int check_procs(pid_t *procs) {
     int pid;
@@ -44,20 +54,10 @@ int check_procs(pid_t *procs) {
     int wstatus;
     int num_term = 0;
 
-    /*
-     * Note that we only need to iterate through the portion of the array
-     * where elements are non-negative, since elements are always added to
-     * the first available slot, and elements with a value of -1 are unused.
-     */
     while (i < MAX_PROCS && procs[i] >= 0) {
-        /*
-         * If procs[i] == 0, it means that the slot was used
-         * for a pid that was found in a previous check
-         */
         if (procs[i] > 0) {
             pid = waitpid(procs[i], &wstatus, WNOHANG);
 
-            // report child pid and status if given process has finished
             if (pid == procs[i]) {
                 num_term++;
                 procs[i] = 0;
@@ -76,18 +76,14 @@ int check_procs(pid_t *procs) {
 }
 
 
-/*
- * Kill all active background processes using the given array of pids of
- * background processes.
+/**
+ * clean_up_procs():
+ * Kill all active background processes in array of pids @procs.
+ * @procs: the array of pids
  */
 void clean_up_procs(pid_t *procs) {
     int i = 0;
 
-    /*
-     * Note that we only need to iterate through the portion of the array
-     * where elements are non-negative, since elements are always added to
-     * the first available slot, and elements with a value of -1 are unused.
-     */
     while (i < MAX_PROCS && procs[i] >= 0) {
         if (procs[i] > 0) {
             kill(procs[i], SIGTERM);
@@ -97,35 +93,37 @@ void clean_up_procs(pid_t *procs) {
 }
 
 
-/*
- * Execute the command parsed into cmd_line struct. Returns -1 upon error,
- * but it will not return at all if it succeeds since it uses execvp. If
- * cmd_parts array doesn't indicate any file for input and/or output
- * redirection, the given arguments input_file and/or output_file will be used.
+/**
+ * execute_external():
+ * Execute the command parsed into @cmd_line struct.
+ * @cmd_parts: the parts of the parsed command
+ * @input_file: name of file for input redirection if none specified in
+ *              @cmd_parts
+ * @output_file: name of file for output redirection if none specified in
+ *               @cmd_parts
+ *
+ * If @cmd_parts does not indicate any file for input and/or output redirection,
+ * @input_file and/or @output_file will be used. If both @cmd_parts->input_file
+ * and @input_file are NULL, input redirection will not occur. If both
+ * @cmd_parts->output_file and @output_file are NULL, output redirection will
+ * not occur.
+ *
+ * Returns:
+ * -1 upon error, but will not return at all if it succeeds
  */
 int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file) {
     int success = 0;
-
-    /*
-     * Set files used for input and output redirection. Use the file names
-     * stored in cmd_parts if they are not NULL, otherwise use the file names
-     * given in the other arguments to this function. If both are NULL, the
-     * redirection will not occur.
-     */
     char *input_red = (cmd_parts->input_file) ? (cmd_parts->input_file) : input_file;
     char *output_red = (cmd_parts->output_file) ? (cmd_parts->output_file) : output_file;
 
-    // Input redirection: only occurs if file name in input_red is not NULL.
     if (input_red) {
         success = redirect_input(input_red);
     }
 
-    // Output redirection: only occurs if file name in output_red is not NULL.
     if (output_red && success != -1) {
         success = redirect_output(output_red);
     }
 
-    // If redirection did not return an error, execute command.
     if (success != -1) {
         success = execvp(cmd_parts->cmd, cmd_parts->args);
     }
@@ -133,44 +131,40 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
 }
 
 
-/*
- * Run external command in the foreground by forking a child.
- * Returns the pid of the child process.
- * Returns -1 if an error occurred.
+/**
+ * run_external_fg():
+ * Run external command parsed into @cmd_parts in the foreground by forking a
+ * new process.
+ * @cmd_parts: the parts of the parsed command
+ * @status: a reference variable to return command status to
+ * @status_type: a reference variable to return the type of the status to
+ *
+ * Returns:
+ * the pid of the new process or -1 if an error occurred
  */
 pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
-        // fork error
         char *msg = "fork() failed!";
         exit_if_error(child_pid==-1, msg);
 
     } else if(child_pid == 0){
-        /*
-         * child process
-         * Initialize fg child signal handlers, then execute command.
-         */
         init_fg_child_sig_handlers();
         execute_external(cmd_parts, NULL, NULL);
 
         /*
-         * Report an error and terminate child process if execute_external
+         * Report an error and terminate child process if execute_external()
          * returns, which would only occur if there was an error.
          */
         exit_if_error(1, cmd_parts->cmd);
 
     } else {
-        /*
-         * parent process
-         * Errors in this portion of the function are fatal because they likely
-         * indicate a problem in the code rather than invalid user input.
-         */
-        int wstatus;                    // status returned from waitpid
-        sigset_t block_mask;            // used to block the SIGTSTP signal
-                                        // while fg command is running
+        int wstatus;                    /* status returned from waitpid */
+        sigset_t block_mask;            /* used to block the SIGTSTP signal */
+                                        /* while fg command is running */
 
-        // create a sigset_t mask containing only the SIGTSTP signal
+        /* create a sigset_t mask containing only the SIGTSTP signal */
         sigemptyset(&block_mask);
         sigaddset(&block_mask, SIGTSTP);
 
@@ -181,7 +175,7 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type)
         int result = sigprocmask(SIG_SETMASK, &block_mask, NULL);
         exit_if_error((result == -1), "sigprocmask");
 
-        // Wait for the fg command to complete
+        /* Wait for the fg command to complete */
         pid_t temp_pid = waitpid(child_pid, &wstatus, 0);
         exit_if_error((temp_pid == -1), "waitpid");
 
@@ -194,8 +188,8 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type)
         exit_if_error((result == -1), "sigprocmask");
 
         /*
-         * Update status value and type.
-         * Only report it if the process was killed by a signal.
+         * Update status value and type, but only report it if the process
+         * was killed by a signal.
          */
         *status = get_status(wstatus, status_type);
         if (*status_type == CLD_KILLED) {
@@ -206,39 +200,41 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type)
 }
 
 
-// Run external command in the background by forking a child.
+/**
+ * run_external_bg():
+ * Run external command parsed into @cmd_parts in the background by forking a
+ * new process.
+ * @cmd_parts: the parts of the parsed command
+ * @input_file: name of file for input redirection if none specified in
+ *              @cmd_parts
+ * @output_file: name of file for output redirection if none specified in
+ *               @cmd_parts
+ * @procs: an array in which to record the pid of the new process
+ *
+ * See execute_external() more info about @input_file and @output_file.
+ */
 void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, pid_t *procs) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
-        // fork error
         perror("fork() failed!");
         fflush(stdout);
         bg_exit_if_error(child_pid==-1);
 
     } else if(child_pid == 0){
-        /*
-         * child process
-         * Initialize bg child signal handlers, then execute command.
-         */
         init_bg_child_sig_handlers();
+        execute_external(cmd_parts, input_file, output_file);
 
         /*
-         * Terminate child process if execute_external returns,
+         * Terminate child process if execute_external() returns,
          * which would only occur if there was an error.
          */
-        execute_external(cmd_parts, input_file, output_file);
         exit(FAILURE);
 
     } else {
-        /*
-         * parent process
-         * report child pid when background process starts
-         */
         printf("background pid is %d\n", child_pid);
         fflush(stdout);
 
-        // Record the child pid in procs array in first available slot.
         set_proc(procs, child_pid);
     }
 }

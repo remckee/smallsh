@@ -10,16 +10,16 @@
  * it returns str unchanged.
  */
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
-    const long len_str = strlen(str);           // original length of str
-    long len_pat = strlen(pattern);             // length of given pattern
-    long len_repl = strlen(repl);               // length of replacement string
-    char *next_pat = (strstr(str, pattern));    // pointer to start of next
-                                                // instance of pattern
+    const long len_str = strlen(str);           /* original length of str */
+    long len_pat = strlen(pattern);             /* length of given pattern */
+    long len_repl = strlen(repl);               /* length of replacement */
+    char *next_pat = (strstr(str, pattern));    /* pointer to start of next */
+                                                /* instance of pattern */
     *nrepls = 0;
 
-    // if next_pat is not NULL, at least one instance of pattern was found
+    /* if next_pat is not NULL, at least one instance of pattern was found */
     if (next_pat) {
-        long len_new_str = len_str; // length of str after replacements
+        long len_new_str = len_str; /* length of str after replacements */
 
         /*
          * If the replacment expands str (len_repl > len_pat), calculate length
@@ -32,20 +32,20 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
         long max_len = (len_repl > len_pat)
             ? (len_str/len_pat)*(len_repl) + (len_str%len_pat) : len_str;
 
-        // allocate the string to be returned
+        /* allocate the string to be returned */
         char *new_str = NULL;
         new_str = malloc((max_len+1)*sizeof(char));
 
-        // if malloc failed, display an error message and return NULL immediately
+        /* if malloc failed, display error message and return NULL */
         if (warn_error(new_str==NULL, "NULL ptr")) {
             return NULL;
         }
 
-        // Iterate through str to find and replace each instance of pattern.
+        /* Iterate through str to find and replace each instance of pattern. */
 
-        char *s = str;              // pointer to current location within str
-        char *end = (str+len_str);  // pointer to end of original str
-        long i = 0;                 // index in new_str
+        char *s = str;              /* pointer to current location within str */
+        char *end = (str+len_str);  /* pointer to end of original str */
+        long i = 0;                 /* index in new_str */
 
         while (s < end) {
             if (!next_pat) {
@@ -74,7 +74,7 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
                     i++;
                 }
 
-                // copy the replacement into new_str
+                /* copy the replacement into new_str */
                 for (int j = 0; j < len_repl; j++) {
                     new_str[i] = repl[j];
                     i++;
@@ -101,22 +101,23 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
 }
 
 
-/*
- * Converts a long in the specified base to a char buffer
- * and returns the number of digits in the number if successful.
- * Returns 0 if it failed.
+/**
+ * ltoa_buf():
+ * Convert a numerical value to a string.
+ * @num: the number to convert
+ * @buf: out parameter for the string representation of @num
+ * @size: length of @buf
+ * @base: the base of @num
+ *
+ * Return:
+ * the number of digits in the number if successful, 0 if it failed
  */
 int ltoa_buf(long num, char *buf, int size, int base) {
-    // clear buffer; avoiding possibly nonreentrant function memset
+    /* clear buffer, avoiding possibly nonreentrant function memset */
     for (int k = 0; k < size; k++) {
         buf[k] = '\0';
     }
 
-    /*
-     * If num is negative, place the sign in buf[0] and make num positive.
-     * Increment the variable start so that the sign will not be overwritten
-     * when the chars are copied within the array later.
-     */
     int start = 0;
     if (num < 0) {
         buf[0] = '-';
@@ -124,19 +125,12 @@ int ltoa_buf(long num, char *buf, int size, int base) {
         start++;
     }
 
-    /*
-     * Determine the value of each digit of num, starting at the right-most
-     * digit of num, and copy it from right to left to buf,
-     * starting at second-to-last char.
-     */
-
-    int digit;                  // value of current digit of num
-    int num_digits = 0;         // used to keep track of the number of digits
-    int i = size-1;             // index within buf
+    int digit;                  /* value of current digit of num */
+    int num_digits = 0;         /* used to keep track of the number of digits */
+    int i = size-1;             /* index within buf */
     buf[i] = '\0';
     i--;
 
-    // special case for num == 0 since it will not enter the while loop
     if (num == 0) {
         buf[i] = 0x30;
         num_digits++;
@@ -151,17 +145,12 @@ int ltoa_buf(long num, char *buf, int size, int base) {
         i--;
     }
 
-    /*
-     * move digits to beginning of array, clearing each src digit after
-     * it is copied to dest
-     * avoiding possibly nonreentrant function memmove
-     */
+    /* move digits to beginning of array */
     for (int dest = start, src = i+1; src < size && dest < src; dest++, src++) {
         buf[dest] = buf[src];
         buf[src] = '\0';
     }
 
-    // clearing rest of array, just in case it wasn't already cleared
     for (int j = num_digits; j < size; j++) {
         buf[start+j] = '\0';
     }
@@ -170,29 +159,38 @@ int ltoa_buf(long num, char *buf, int size, int base) {
 }
 
 
-/*
- * decimal long to ascii conversion
- * Returns the number of digits in the number if successful.
- * Returns 0 if it failed.
+/**
+ * ltoa_dec_buf():
+ * Convert a base 10 numerical value to a string.
+ * @num: the number to convert
+ * @buf: out parameter for the string representation of @num
+ * @size: length of @buf
+ *
+ * Return:
+ * the number of digits in the number if successful, 0 if it failed
  */
 int ltoa_dec_buf(long num, char *buf, int size) {
     return ltoa_buf(num, buf, size, 10);
 }
 
 
-/*
- * Replaces all instances of PID_VAR in str with pid.
- * The number of replacements made is stored in nrepls.
- * Note that a new string will be allocated if any replacements
- * are made, so the caller will need to free str if nrepls > 0.
- * Returns the allocated string if any replacements were made
- * Returns an unallocated string identical to str if no replacements were made
- * Return NULL if an error occurred
+/**
+ * expand_vars():
+ * Replace all instances of PID_VAR in a string with a given pid.
+ * @str: the string to search
+ * @pid: the pid to replace PID_VAR with, in string form
+ * @nrepls: the number of replacements made. Note that a new string will be
+ *          allocated if any replacements are made, so the caller will need to
+ *          free @str if @nrepls > 0.
+ *
+ * Return:
+ * - the allocated string if any replacements were made
+ * - an unallocated string identical to @str if no replacements were made
+ * - NULL if an error occurred
  */
 char *expand_vars(char *str, char *pid, int *nrepls) {
     char *result;
 
-    // If pid has at least 1 char, replace all instances of PID_VAR with pid
     if (strlen(pid) > 0) {
         result = find_replace(PID_VAR, str, pid, nrepls);
     } else {
