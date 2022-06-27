@@ -58,9 +58,11 @@ void print_cmd(struct cmd_line *cmd_parts) {
 }
 
 
-// Returns a bool indicating whether this command should be skipped because
-// the read was invalid or only contained a newline char, it was a comment,
-// or it exceeded the char limit.
+/*
+ * Returns a bool indicating whether this command should be skipped because
+ * the read was invalid or only contained a newline char, it was a comment,
+ * or it exceeded the char limit.
+ */
 bool valid_line(char *line, ssize_t nread) {
     bool skip = false;
 
@@ -70,8 +72,10 @@ bool valid_line(char *line, ssize_t nread) {
         skip = true;
     }
 
-    // If the command line exceeds the character limit, warn_chars will display a
-    // warning message to the user and return true.
+    /*
+     * If the command line exceeds the character limit, warn_chars will
+     * display a warning message to the user and return true.
+     */
     skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
 
     return skip;
@@ -92,19 +96,21 @@ void init_cmd_struct(struct cmd_line *cmd_parts) {
 }
 
 
-// Parse the given command line into a struct and return the struct.
-// If the command should not be processed for any reason, the bool pointer
-// skip is set to true.
+/*
+ * Parse the given command line into a struct and return the struct.
+ * If the command should not be processed for any reason, the bool pointer
+ * skip is set to true.
+ */
 struct cmd_line *get_cmd(bool *skip, char *pid) {
     // print the command prompt
     printf("%c ", CMD_PROMPT);
     fflush(stdout);
 
-    char *line = NULL;          // Stores entire user input, which will be copied
-                                // to buf if it does not exceed the char limit.
-    char buf[MAX_CHARS+2];      // MAX_CHARS+2 allows room for \n and \0 at the end
-    ssize_t nread = 0;          // number of bytes read in input
-    size_t len = 0;             // size of allocated buffer
+    char *line = NULL;      // Stores entire user input, which will be copied
+                            // to buf if it does not exceed the char limit.
+    char buf[MAX_CHARS+2];  // MAX_CHARS+2 allows room for \n and \0 at the end
+    ssize_t nread = 0;      // number of bytes read in input
+    size_t len = 0;         // size of allocated buffer
 
     // read in and validate line
     nread = getline(&line, &len, stdin);
@@ -125,28 +131,37 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
         // try to parse first argument (command)
         arg = strtok_r(buf, " \n", &save_ptr);
 
-        // Skip rest of command if arg is NULL (possibly due to containing only
-        // whitespace) or command is a comment line not caught previously.
-        // Note that a comment line with leading whitespace, if it exceeds the char limit,
-        // should be caught by warn_chars, not here, to avoid buffer overflow.
+        /*
+         * Skip rest of command if arg is NULL (possibly due to containing only
+         * whitespace) or command is a comment line not caught previously.
+         * Note that a comment line with leading whitespace, if it exceeds the
+         * char limit, should be caught by warn_chars, not here, to avoid
+         * buffer overflow.
+         */
         *skip = !arg || (arg[0]==COMMENT_CHAR);
 
         if (!(*skip)) {
-            // Check for instances of $$ that should be expanded.
-            // expand_vars will return the new string after the expansions.
-            int exp_count = 0;                          // the number of instances of $$
+            /*
+             * Check for instances of $$ that should be expanded.
+             * expand_vars will return the new string after the expansions.
+             */
+            int exp_count = 0;      // the number of instances of $$
             arg = expand_vars(arg, pid, &exp_count);
 
-            // If arg is not NULL, copy the command into the cmd member of
-            // the struct, and into the first element of the args array.
+            /*
+             * If arg is not NULL, copy the command into the cmd member of
+             * the struct, and into the first element of the args array.
+             */
             if (arg) {
                 cmd_parts->cmd = strdup(arg);
                 cmd_parts->args[cmd_parts->argsc] = cmd_parts->cmd;
                 (cmd_parts->argsc)++;
 
-                // expand_vars returned the number of $$ replacements made in
-                // exp_count. If no replacements were made, it will be zero.
-                // arg will only need to be freed if replacements were made.
+                /*
+                 * expand_vars returned the number of $$ replacements made in
+                 * exp_count. If no replacements were made, it will be zero.
+                 * arg will only need to be freed if replacements were made.
+                 */
                 if (exp_count > 0) {
                     free(arg);
                 }
@@ -155,16 +170,18 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                 *skip = true;
             }
 
-            int input_next = -1;        // whether the next arg should be an input file
-            int output_next = -1;       // whether the next arg should be an output file
+            int input_next = -1;    // whether the next arg should be an input file
+            int output_next = -1;   // whether the next arg should be an output file
 
             // process the rest of the command, if any
             while (arg && !(*skip)) {
                 // get next word
                 arg = strtok_r(NULL, " \n", &save_ptr);
                 if (arg) {
-                    // Set cmd_parts->background to false here, since if it was
-                    // previously set to true, it would not be the last argument.
+                    /*
+                     * Set cmd_parts->background to false here, since if it was
+                     * previously set to true, it would not be the last argument.
+                     */
                     cmd_parts->background = false;
 
                     // expand instances of $$
@@ -177,8 +194,11 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                     if (!arg) {
                         *skip = true;
                     } else if (input_next==1) {
-                        // if the last word processed indicated input redirection,
-                        // stored this word in the struct as the input file
+                        /*
+                         * if the last word processed indicated input
+                         * redirection, stored this word in the struct as the
+                         * input file
+                         */
                         cmd_parts->input_file = strdup(arg);
                         input_next = 0;
                     } else if (output_next==1) {
@@ -187,26 +207,32 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                         output_next = 0;
 
                     } else if (arg_len==1 && arg[0]==INPUT_REDIR) {
-                    // check if current word indicates input redirection
-                    // input_next *= -1 will change the value:
-                    // -1 -> 1          0 -> 0          1 -> -1
-                    // such that, if initialized to -1 and set to 0 after
-                    // using, it can only be used once.
+                    /*
+                     * check if current word indicates input redirection
+                     * input_next *= -1 will change the value:
+                     * -1 -> 1          0 -> 0          1 -> -1
+                     * such that, if initialized to -1 and set to 0 after
+                     * using, it can only be used once.
+                     */
                         input_next *= -1;
 
                     } else if (arg_len==1 && arg[0]==OUTPUT_REDIR) {
                         output_next *= -1;
 
                     } else if (arg_len==1 && arg[0]==BACKGROUND) {
-                        // if there are any arguments after this,
-                        // cmd_parts->background will be changed to false
-                        // near beginning of next iteration of while loop
+                        /*
+                         * if there are any arguments after this,
+                         * cmd_parts->background will be changed to false
+                         * near beginning of next iteration of while loop
+                         */
                         cmd_parts->background = true;
 
                     } else {
-                        // If the command line args will exceed the argument limit
-                        // after incrementing, warn_args will display a warning message
-                        // to the user and return true.
+                        /*
+                         * If the command line args will exceed the argument
+                         * limit after incrementing, warn_args will display a
+                         * warning message to the user and return true.
+                         */
                         (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS, MAX_ARGS);
 
                         // store as in args array

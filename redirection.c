@@ -1,9 +1,11 @@
 #include "smallsh.h"
 
 
-// Redirect the given file_name to new_fd with the given flags.
-// msg specifies whether it is input or output for the error message.
-// Returns -1 upon error.
+/*
+ * Redirect the given file_name to new_fd with the given flags.
+ * msg specifies whether it is input or output for the error message.
+ * Returns -1 upon error.
+ */
 int redirect(char *file_name, char *msg, int flags, int new_fd) {
     int fd = open(file_name, flags, S_IRW);
 

@@ -1,10 +1,12 @@
 #include "smallsh.h"
 
 
-// SIGTSTP (CTRL-Z) signal handler
-// parent: enter or exit foreground-only mode
-// Uses the functions get_fg_only() and toggle_fg_only() to indirectly
-// access the file scoped variable in fg_only_mode.c.
+/*
+ * SIGTSTP (CTRL-Z) signal handler
+ * parent: enter or exit foreground-only mode
+ * Uses the functions get_fg_only() and toggle_fg_only() to indirectly
+ * access the file scoped variable in fg_only_mode.c.
+ */
 void handle_sigtstp(int signum) {
     // display message depending on fg_only status
     if (!get_fg_only()) {
@@ -22,9 +24,11 @@ void handle_sigtstp(int signum) {
 }
 
 
-// Initialize a given signal handler for signal signum.
-// Sets sa_mask to block all signals
-// Returns -1 if an error occurred.
+/*
+ * Initialize a given signal handler for signal signum.
+ * Sets sa_mask to block all signals
+ * Returns -1 if an error occurred.
+ */
 int init_handle_sigint(int signum, void (*handler)(int)) {
     struct sigaction action  = {0};
     action.sa_handler = handler;
@@ -38,9 +42,11 @@ int init_handle_sigint(int signum, void (*handler)(int)) {
 }
 
 
-// Initialize a given signal handler for signal signum.
-// Sets sa_mask to empty
-// Returns -1 if an error occurred.
+/*
+ * Initialize a given signal handler for signal signum.
+ * Sets sa_mask to empty
+ * Returns -1 if an error occurred.
+ */
 int init_handle_sigtstp(int signum, void (*handler)(int)) {
     struct sigaction action  = {0};
     action.sa_handler = handler;
@@ -54,8 +60,7 @@ int init_handle_sigtstp(int signum, void (*handler)(int)) {
 }
 
 
-// Initialize SIG_IGN for signal signum.
-// Returns -1 if an error occurred.
+// Initialize SIG_IGN for signal signum. Returns -1 if an error occurred.
 int init_ignore(int signum) {
     struct sigaction action  = {0};
     action.sa_handler = SIG_IGN;
@@ -69,9 +74,11 @@ int init_ignore(int signum) {
 }
 
 
-// Initializes the signal handlers for the parent process. Errors here are
-// fatal (e.g., exit the shell) because they likely indicate an error
-// related to the signal handler or specified signum being invalid.
+/*
+ * Initializes the signal handlers for the parent process. Errors here are
+ * fatal (e.g., exit the shell) because they likely indicate an error
+ * related to the signal handler or specified signum being invalid.
+ */
 void init_parent_sig_handlers() {
     exit_if_error(init_ignore(SIGINT)==-1, "sigaction");
     exit_if_error(init_handle_sigtstp(SIGTSTP, handle_sigtstp)==-1, "sigaction");

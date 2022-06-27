@@ -1,9 +1,11 @@
 #include "smallsh.h"
 
 
-// Isolating this "file scope" variable in its own file
-// so that other functions besides toggle_fg_only() and
-// get_fg_only() cannot access it directly.
+/*
+ * Isolating this "file scope" variable in its own file
+ * so that other functions besides toggle_fg_only() and
+ * get_fg_only() cannot access it directly.
+ */
 static bool fg_only = false;
 
 

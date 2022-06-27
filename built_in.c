@@ -1,13 +1,15 @@
 #include "smallsh.h"
 
 
-// Writes num to stdout using only non-reentrant functions.
-// returns a positive value on success
-// returns a negative value on error
-//
-// Note that non-reentrancy is not required in the current version
-// of the program, since none of the signal handlers use write_number(),
-// but it was required for a signal handler that has been removed.
+/*
+ * Writes num to stdout using only non-reentrant functions.
+ * returns a positive value on success
+ * returns a negative value on error
+ *
+ * Note that non-reentrancy is not required in the current version
+ * of the program, since none of the signal handlers use write_number(),
+ * but it was required for a signal handler that has been removed.
+ */
 ssize_t write_number(long num) {
     int num_len = 21;  // 9223372036854775807 has 19 chars + 2 for sign and \0
     char num_ascii[num_len];
@@ -27,8 +29,10 @@ ssize_t write_number(long num) {
 }
 
 
-// Changes current working directory to a named directory or HOME.
-// Returns -1 upon error.
+/*
+ * Changes current working directory to a named directory or HOME.
+ * Returns -1 upon error.
+ */
 int mycd(char *args[], int argsc) {
     int success = -1;
 
@@ -47,9 +51,11 @@ int mycd(char *args[], int argsc) {
 }
 
 
-// Uses the status value obtained from a waitpid call (wstatus) to determine
-// whether the process exited or was terminated by a signal (type).
-// Returns either the exit value or number of the signal that caused termination.
+/*
+ * Uses the status value obtained from a waitpid call (wstatus) to determine
+ * whether the process exited or was terminated by a signal (type). Returns
+ * either the exit value or number of the signal that caused termination.
+ */
 int get_status(int wstatus, int *type) {
     int status;
 
@@ -66,12 +72,14 @@ int get_status(int wstatus, int *type) {
 }
 
 
-// Write the status with the given type (exited vs. terminated by signal)
-// and value to stdout.
-//
-// Note that non-reentrancy is not required in the current version
-// of the program, since none of the signal handlers use report_status(),
-// but it was required for a signal handler that has been removed.
+/*
+ * Write the status with the given type (exited vs. terminated by signal)
+ * and value to stdout.
+ *
+ * Note that non-reentrancy is not required in the current version
+ * of the program, since none of the signal handlers use report_status(),
+ * but it was required for a signal handler that has been removed.
+ */
 void report_status(int status, int type) {
     char *message;
     size_t msg_len = 0;
@@ -93,8 +101,10 @@ void report_status(int status, int type) {
 }
 
 
-// Perform clean-up and then exit shell. Frees memory allocated by
-// last command, kills all child processes, then exits with the given status.
+/*
+ * Perform clean-up and then exit shell. Frees memory allocated by
+ * last command, kills all child processes, then exits with the given status.
+ */
 void myexit(struct cmd_line *cmd_parts, int status, pid_t *pids) {
     free_cmd(cmd_parts);
     clean_up_procs(pids);
