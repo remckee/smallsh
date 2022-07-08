@@ -1,13 +1,19 @@
 #include "smallsh.h"
 
 
-/*
- * This function finds each occurrence of pattern in str and replaces it with
- * repl. The resulting string is returned, and the number of replacements made
- * is placed in pointer nrepls. The string is allocated only if at least one
- * replacement was made, so the caller must check that nrepls is greater than
- * 0 before calling free on the returned string. If no replacements are made,
- * it returns str unchanged.
+/**
+ * find_replace():
+ * Find each occurrence of @pattern in @str and replace it with @repl.
+ * @pattern: the exact string to search for. Cannot handle regex patterns.
+ * @str: the string to search
+ * @repl: the string to replace @pattern with
+ * @nrepls: an output variable for the number of replacements made
+ *
+ * Returns:
+ * the resulting string after replacements are made. The string is allocated
+ * only if at least one replacement was made, so the caller must check that
+ * @nrepls is greater than 0 before calling free on the returned string. If no
+ * replacements are made, it returns @str unchanged.
  */
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
     const long len_str = strlen(str);           /* original length of str */
