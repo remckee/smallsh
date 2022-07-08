@@ -17,37 +17,30 @@
  */
 char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
     const long len_str = strlen(str);           /* original length of str */
-    long len_pat = strlen(pattern);             /* length of given pattern */
-    long len_repl = strlen(repl);               /* length of replacement */
+    long len_pat = strlen(pattern);
+    long len_repl = strlen(repl);
     char *next_pat = (strstr(str, pattern));    /* pointer to start of next */
                                                 /* instance of pattern */
     *nrepls = 0;
 
-    /* if next_pat is not NULL, at least one instance of pattern was found */
     if (next_pat) {
         long len_new_str = len_str; /* length of str after replacements */
 
         /*
-         * If the replacment expands str (len_repl > len_pat), calculate length
-         * of string after max possible replacments.
-         * If the replacement shrinks str (e.g., replacement text is shorter
-         * than the pattern), use the original length of str to avoid making
-         * new_str smaller than str, since we don't yet know how many
-         * replacements will be made.
+         * If the replacment expands str, calculate length of string after max
+         * possible replacments. If the replacement shrinks str, use the
+         * original length of str.
          */
         long max_len = (len_repl > len_pat)
             ? (len_str / len_pat) * (len_repl) + (len_str % len_pat) : len_str;
 
         /* allocate the string to be returned */
         char *new_str = NULL;
-        new_str = malloc((max_len + 1) * sizeof(char));
 
-        /* if malloc failed, display error message and return NULL */
+        new_str = malloc((max_len + 1) * sizeof(char));
         if (warn_error(new_str == NULL, "NULL ptr")) {
             return NULL;
         }
-
-        /* Iterate through str to find and replace each instance of pattern. */
 
         char *s = str;              /* pointer to current location within str */
         char *end = (str + len_str);/* pointer to end of original str */
@@ -63,24 +56,16 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
                 s++;
                 i++;
             } else {
-                /*
-                 * Increment number of replacements made, and update
-                 * the length of the new string.
-                 */
                 (*nrepls)++;
                 len_new_str += (len_repl - len_pat);
 
-            /*
-             * Loop through str (via ptr s) character-by-character, copying to
-             * new_str, until the next instance of pattern (found previously).
-             */
+                /* Loop through str until the next instance of pattern */
                 while (s < next_pat) {
                     new_str[i] = *s;
                     s++;
                     i++;
                 }
 
-                /* copy the replacement into new_str */
                 for (int j = 0; j < len_repl; j++) {
                     new_str[i] = repl[j];
                     i++;
