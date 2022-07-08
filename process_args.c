@@ -84,8 +84,8 @@ bool valid_line(char *line, ssize_t nread) {
         skip = true;
     }
 
-    skip = (nread <= 1) || (line[0]==COMMENT_CHAR)
-            || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
+    skip = (nread <= 1) || (line[0] == COMMENT_CHAR)
+            || warn_chars(nread > MAX_CHARS + 1, MAX_CHARS);
 
     return skip;
 }
@@ -125,7 +125,7 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
 
     char *line = NULL;      /* Stores entire user input, which will be copied */
                             /* to buf if it does not exceed the char limit. */
-    char buf[MAX_CHARS+2];  /* MAX_CHARS+2 allows room for \n and \0 */
+    char buf[MAX_CHARS + 2];/* MAX_CHARS + 2 allows room for \n and \0 */
     ssize_t nread = 0;      /* number of bytes read in input */
     size_t len = 0;         /* size of allocated buffer */
 
@@ -144,7 +144,7 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
 
         arg = strtok_r(buf, " \n", &save_ptr);
 
-        *skip = (!arg || (arg[0]==COMMENT_CHAR));
+        *skip = (!arg || (arg[0] == COMMENT_CHAR));
 
         if (!(*skip)) {
             /* Check for instances of $$ that should be expanded. */
@@ -183,14 +183,14 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
 
                     if (!arg) {
                         *skip = true;
-                    } else if (input_next==1) {
+                    } else if (input_next == 1) {
                         cmd_parts->input_file = strdup(arg);
                         input_next = 0;
-                    } else if (output_next==1) {
+                    } else if (output_next == 1) {
                         cmd_parts->output_file = strdup(arg);
                         output_next = 0;
 
-                    } else if (arg_len==1 && arg[0]==INPUT_REDIR) {
+                    } else if (arg_len == 1 && arg[0] == INPUT_REDIR) {
                     /*
                      * check if current word indicates input redirection
                      * input_next *= -1 will change the value:
@@ -200,10 +200,10 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                      */
                         input_next *= -1;
 
-                    } else if (arg_len==1 && arg[0]==OUTPUT_REDIR) {
+                    } else if (arg_len == 1 && arg[0] == OUTPUT_REDIR) {
                         output_next *= -1;
 
-                    } else if (arg_len==1 && arg[0]==BACKGROUND) {
+                    } else if (arg_len == 1 && arg[0] == BACKGROUND) {
                         /*
                          * if there are any arguments after this,
                          * cmd_parts->background will be changed to false
@@ -212,7 +212,7 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                         cmd_parts->background = true;
 
                     } else {
-                        (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS,
+                        (*skip) = warn_args((cmd_parts->argsc) + 1 > MAX_ARGS,
                                             MAX_ARGS);
 
                         if (!(*skip)) {

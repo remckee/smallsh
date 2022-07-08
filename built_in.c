@@ -20,7 +20,7 @@ ssize_t write_number(long num) {
         fflush(stdout);
     }
 
-    num_len = (num_len==0) ? -1 : num_len;
+    num_len = (num_len == 0) ? -1 : num_len;
 
     return num_len;
 }
@@ -88,7 +88,7 @@ void report_status(int status, int type) {
     size_t msg_len = 0;
     char nl = '\n';
 
-    if (type==CLD_KILLED) {
+    if (type == CLD_KILLED) {
         message = "terminated by signal ";
         msg_len = 22;
     } else {
@@ -173,7 +173,7 @@ int run_built_in(struct cmd_line *cmd_parts, int status, int status_type,
         result = mycd(cmd_parts->args, cmd_parts->argsc);
 
         /* Display a warning if the given directory does not exist */
-        warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd,
+        warn_dne((result == -1) && (cmd_parts->argsc > 1), cmd_parts->cmd,
                  cmd_parts->args[1]);
 
     } else if (!strcmp(cmd_parts->cmd, "status")) {

@@ -152,7 +152,7 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status,
 
     if(child_pid == -1){
         char *msg = "fork() failed!";
-        exit_if_error(child_pid==-1, msg);
+        exit_if_error(child_pid == -1, msg);
 
     } else if(child_pid == 0){
         init_fg_child_sig_handlers();
@@ -225,7 +225,7 @@ void run_external_bg(struct cmd_line *cmd_parts, char *input_file,
     if(child_pid == -1){
         perror("fork() failed!");
         fflush(stdout);
-        bg_exit_if_error(child_pid==-1);
+        bg_exit_if_error(child_pid == -1);
 
     } else if(child_pid == 0){
         init_bg_child_sig_handlers();

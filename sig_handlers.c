@@ -93,8 +93,8 @@ int init_ignore(int signum) {
  * Initializes the signal handlers for the parent process.
  */
 void init_parent_sig_handlers() {
-    exit_if_error(init_ignore(SIGINT)==-1, "sigaction");
-    exit_if_error(init_handle_sigtstp(SIGTSTP, handle_sigtstp)==-1,
+    exit_if_error(init_ignore(SIGINT) == -1, "sigaction");
+    exit_if_error(init_handle_sigtstp(SIGTSTP, handle_sigtstp) == -1,
                   "sigaction");
 }
 
@@ -104,8 +104,8 @@ void init_parent_sig_handlers() {
  * Initializes the signal handlers for a fg child process.
  */
 void init_fg_child_sig_handlers() {
-    exit_if_error(init_handle_sigint(SIGINT, SIG_DFL)==-1, "sigaction");
-    exit_if_error(init_ignore(SIGTSTP)==-1, "sigaction");
+    exit_if_error(init_handle_sigint(SIGINT, SIG_DFL) == -1, "sigaction");
+    exit_if_error(init_ignore(SIGTSTP) == -1, "sigaction");
 }
 
 
@@ -114,7 +114,7 @@ void init_fg_child_sig_handlers() {
  * Initializes the signal handlers for a bg child process.
  */
 void init_bg_child_sig_handlers() {
-    exit_if_error(init_ignore(SIGINT)==-1, "sigaction");
-    exit_if_error(init_ignore(SIGTSTP)==-1, "sigaction");
+    exit_if_error(init_ignore(SIGINT) == -1, "sigaction");
+    exit_if_error(init_ignore(SIGTSTP) == -1, "sigaction");
 }
 

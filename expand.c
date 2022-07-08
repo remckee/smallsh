@@ -30,21 +30,21 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
          * replacements will be made.
          */
         long max_len = (len_repl > len_pat)
-            ? (len_str/len_pat)*(len_repl) + (len_str%len_pat) : len_str;
+            ? (len_str / len_pat) * (len_repl) + (len_str % len_pat) : len_str;
 
         /* allocate the string to be returned */
         char *new_str = NULL;
-        new_str = malloc((max_len+1)*sizeof(char));
+        new_str = malloc((max_len + 1) * sizeof(char));
 
         /* if malloc failed, display error message and return NULL */
-        if (warn_error(new_str==NULL, "NULL ptr")) {
+        if (warn_error(new_str == NULL, "NULL ptr")) {
             return NULL;
         }
 
         /* Iterate through str to find and replace each instance of pattern. */
 
         char *s = str;              /* pointer to current location within str */
-        char *end = (str+len_str);  /* pointer to end of original str */
+        char *end = (str + len_str);/* pointer to end of original str */
         long i = 0;                 /* index in new_str */
 
         while (s < end) {
@@ -83,7 +83,7 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
                  * Move s to the char after the pattern, then search for
                  * the next instance of pattern.
                  */
-                s = (next_pat+len_pat);
+                s = (next_pat + len_pat);
                 next_pat = strstr(s, pattern);
             }
         }
@@ -93,7 +93,7 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls) {
          * size, and assign to str.
          */
         new_str[i] = '\0';
-        new_str = realloc(new_str, (i+1) * sizeof(char));
+        new_str = realloc(new_str, (i + 1) * sizeof(char));
         assert(new_str != NULL);
         str = new_str;
     }
@@ -127,7 +127,7 @@ int ltoa_buf(long num, char *buf, int size, int base) {
 
     int digit;                  /* value of current digit of num */
     int num_digits = 0;         /* used to keep track of the number of digits */
-    int i = size-1;             /* index within buf */
+    int i = size - 1;           /* index within buf */
     buf[i] = '\0';
     i--;
 
@@ -146,13 +146,14 @@ int ltoa_buf(long num, char *buf, int size, int base) {
     }
 
     /* move digits to beginning of array */
-    for (int dest = start, src = i+1; src < size && dest < src; dest++, src++) {
+    for (int dest = start, src = i + 1; src < size && dest < src;
+         dest++, src++) {
         buf[dest] = buf[src];
         buf[src] = '\0';
     }
 
     for (int j = num_digits; j < size; j++) {
-        buf[start+j] = '\0';
+        buf[start + j] = '\0';
     }
 
     return num_digits;
