@@ -2,11 +2,10 @@
 
 a small shell implemented in C
 
-To compile, run:
+To build:
 
-    chmod u+x compile.sh
-    ./compile.sh
-    
+        $ make
+
 Program Functionality
 1. The Command Prompt
 

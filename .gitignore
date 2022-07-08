@@ -5,9 +5,10 @@
 *
 */
 
-#unignore .c, .h, and .sh and this file, and the README
+#unignore .c, .h, Makefile, and .sh and this file, and the README
 !.gitignore
 !README.md
 !*.c
 !*.h
 !*.sh
+!Makefile
