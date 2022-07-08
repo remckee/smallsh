@@ -81,7 +81,6 @@ char *find_replace(char *pattern, char *str, char *repl, int *nrepls);
 int ltoa_buf(long num, char *buf, int size, int base);
 int ltoa_dec_buf(long num, char *buf, int size);
 char *expand_vars(char *str, char *pid, int *nrepls);
-char *expand_vars_num(char *str, pid_t pid, int *nrepls);
 
 
 /* fg_only_mode.c */

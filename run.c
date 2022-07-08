@@ -14,6 +14,7 @@ void init_procs(pid_t *procs) {
     }
 }
 
+
 /**
  * set_proc():
  * Set the first available slot in @procs to @pid. An available slot has a

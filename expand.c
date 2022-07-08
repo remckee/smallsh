@@ -200,34 +200,3 @@ char *expand_vars(char *str, char *pid, int *nrepls) {
     return result;
 }
 
-
-/*
- * A version of expand_vars that takes an unconverted, integer (pid_t) argument
- * for pid. Note that this function is not used in the program currently.
- *
- * There are two versions because expand_vars_num was the original
- * version, but using that required the same pid value to be converted to a
- * string each time it was used in a run of smallsh, which seemed inefficient.
- * I decided to leave this version in the program in case it would be useful.
- * Return value and functionality are the same as expand_vars()
- */
-char *expand_vars_num(char *str, pid_t pid, int *nrepls) {
-    int size = 21;  // Max number of characters for a long:
-                    // 9223372036854775807 has 19 chars + 2 for sign and \0
-
-    char *result;
-    char pid_ascii[size];   // used to store the assci characters of pid
-
-    // convert pid to an ascii string and store in pid_ascii
-    size = ltoa_dec_buf(pid, pid_ascii, size);
-
-    // If conversion was successful, replace all instances of PID_VAR with pid
-    if (size > 0) {
-        result = find_replace(PID_VAR, str, pid_ascii, nrepls);
-    } else {
-        result = NULL;
-    }
-
-    return result;
-}
-
