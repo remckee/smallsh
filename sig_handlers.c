@@ -94,7 +94,8 @@ int init_ignore(int signum) {
  */
 void init_parent_sig_handlers() {
     exit_if_error(init_ignore(SIGINT)==-1, "sigaction");
-    exit_if_error(init_handle_sigtstp(SIGTSTP, handle_sigtstp)==-1, "sigaction");
+    exit_if_error(init_handle_sigtstp(SIGTSTP, handle_sigtstp)==-1,
+                  "sigaction");
 }
 
 

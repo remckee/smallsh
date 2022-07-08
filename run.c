@@ -112,10 +112,13 @@ void clean_up_procs(pid_t *procs) {
  * Returns:
  * -1 upon error, but will not return at all if it succeeds
  */
-int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file) {
+int execute_external(struct cmd_line *cmd_parts, char *input_file,
+                     char *output_file) {
     int success = 0;
-    char *input_red = (cmd_parts->input_file) ? (cmd_parts->input_file) : input_file;
-    char *output_red = (cmd_parts->output_file) ? (cmd_parts->output_file) : output_file;
+    char *input_red = (cmd_parts->input_file) ?
+                      (cmd_parts->input_file) : input_file;
+    char *output_red = (cmd_parts->output_file) ?
+                       (cmd_parts->output_file) : output_file;
 
     if (input_red) {
         success = redirect_input(input_red);
@@ -143,7 +146,8 @@ int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_
  * Returns:
  * the pid of the new process or -1 if an error occurred
  */
-pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type) {
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status,
+                      int *status_type) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){
@@ -214,7 +218,8 @@ pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type)
  *
  * See execute_external() more info about @input_file and @output_file.
  */
-void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, pid_t *procs) {
+void run_external_bg(struct cmd_line *cmd_parts, char *input_file,
+                     char *output_file, pid_t *procs) {
     pid_t child_pid = fork();
 
     if(child_pid == -1){

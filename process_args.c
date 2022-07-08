@@ -84,7 +84,8 @@ bool valid_line(char *line, ssize_t nread) {
         skip = true;
     }
 
-    skip = (nread <= 1) || (line[0]==COMMENT_CHAR) || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
+    skip = (nread <= 1) || (line[0]==COMMENT_CHAR)
+            || warn_chars(nread > MAX_CHARS+1, MAX_CHARS);
 
     return skip;
 }
@@ -211,7 +212,8 @@ struct cmd_line *get_cmd(bool *skip, char *pid) {
                         cmd_parts->background = true;
 
                     } else {
-                        (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS, MAX_ARGS);
+                        (*skip) = warn_args((cmd_parts->argsc)+1 > MAX_ARGS,
+                                            MAX_ARGS);
 
                         if (!(*skip)) {
                             cmd_parts->args[cmd_parts->argsc] = strdup(arg);

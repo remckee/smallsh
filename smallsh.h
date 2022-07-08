@@ -64,7 +64,8 @@ void report_status(int status, int type);
 void myexit(struct cmd_line *cmd_parts, int status, pid_t *pids);
 void free_cmd(struct cmd_line *cmd_parts);
 bool is_built_in(char *cmd);
-int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids);
+int run_built_in(struct cmd_line *cmd_parts, int status, int status_type,
+                 pid_t *pids);
 
 
 /* error_warn.c */
@@ -107,9 +108,12 @@ void init_procs(pid_t *procs);
 int set_proc(pid_t *procs, pid_t pid);
 int check_procs(pid_t *procs);
 void clean_up_procs(pid_t *procs);
-int execute_external(struct cmd_line *cmd_parts, char *input_file, char *output_file);
-pid_t run_external_fg(struct cmd_line *cmd_parts, int *status, int *status_type);
-void run_external_bg(struct cmd_line *cmd_parts, char *input_file, char *output_file, pid_t *procs);
+int execute_external(struct cmd_line *cmd_parts, char *input_file,
+                     char *output_file);
+pid_t run_external_fg(struct cmd_line *cmd_parts, int *status,
+                      int *status_type);
+void run_external_bg(struct cmd_line *cmd_parts, char *input_file,
+                     char *output_file, pid_t *procs);
 
 
 /* sig_handlers.c */

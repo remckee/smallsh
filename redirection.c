@@ -55,5 +55,6 @@ int redirect_input(char *file_name) {
  * the file descriptor of @file_name or -1 upon error
  */
 int redirect_output(char *file_name) {
-    return redirect(file_name, "output", O_WRONLY | O_CREAT | O_TRUNC, STDOUT_FILENO);
+    return redirect(file_name, "output", O_WRONLY | O_CREAT | O_TRUNC,
+                    STDOUT_FILENO);
 }

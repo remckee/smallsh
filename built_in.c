@@ -165,14 +165,16 @@ bool is_built_in(char *cmd) {
  * Return:
  * a positive value on success or a negative value on error
  */
-int run_built_in(struct cmd_line *cmd_parts, int status, int status_type, pid_t *pids) {
+int run_built_in(struct cmd_line *cmd_parts, int status, int status_type,
+                 pid_t *pids) {
     int result = 0;
 
     if (!strcmp(cmd_parts->cmd, "cd")) {
         result = mycd(cmd_parts->args, cmd_parts->argsc);
 
         /* Display a warning if the given directory does not exist */
-        warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd, cmd_parts->args[1]);
+        warn_dne((result==-1) && (cmd_parts->argsc > 1), cmd_parts->cmd,
+                 cmd_parts->args[1]);
 
     } else if (!strcmp(cmd_parts->cmd, "status")) {
         report_status(status, status_type);
